@@ -46,24 +46,24 @@ huitu.plot_operando_xrd_echem(Z, x=q, y=t, echem=V, save="operando.pdf")
 
 ## 📦 安装
 
-### 从 wheel 装（推荐分享给同事）
-
-下载 [`dist/huitu-0.4.0-py3-none-any.whl`](dist/) 后：
+### 从源码装（推荐）
 
 ```bash
-pip install huitu-0.4.0-py3-none-any.whl
-# 可选：晶体结构渲染（ASE）
-pip install "huitu[crystal]" --find-links .
-```
-
-### 从源码装（开发用）
-
-```bash
-git clone https://github.com/<your-username>/huitu.git
-cd huitu
+git clone https://github.com/yinliang420/Scientific_Illustration.git
+cd Scientific_Illustration
 pip install -e .                  # 主包
 pip install -e ".[crystal]"       # 加上 ASE 晶体渲染
 pip install -e ".[dev]"           # 加上 pytest / build / twine
+```
+
+### 从 wheel 装（分享给同事）
+
+到 [Releases](https://github.com/yinliang420/Scientific_Illustration/releases) 页面下载最新的 `huitu-0.4.0-py3-none-any.whl`，或在本地自行打包：
+
+```bash
+pip install build && python -m build
+# → dist/huitu-0.4.0-py3-none-any.whl
+pip install dist/huitu-0.4.0-py3-none-any.whl
 ```
 
 依赖：Python ≥ 3.9、matplotlib ≥ 3.7、numpy ≥ 1.23、pandas ≥ 1.5、
