@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "huitu"
+version = "0.4.0"
+description = "Materials-science plotting helpers — journal-ready figures with built-in advanced/operando charts and 50+ curated palettes."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+authors = [
+    { name = "huitu authors" },
+]
+keywords = [
+    "matplotlib",
+    "plotting",
+    "materials-science",
+    "scientific-visualization",
+    "journal",
+    "xrd",
+    "xps",
+    "raman",
+    "operando",
+    "ridgeline",
+    "bump-chart",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Framework :: Matplotlib",
+]
+dependencies = [
+    "matplotlib>=3.7",
+    "numpy>=1.23",
+    "pandas>=1.5",
+    "scipy>=1.10",
+    "scienceplots>=2.0",
+    "Pillow>=9.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "build>=1.0", "twine>=4.0"]
+crystal = ["ase>=3.22"]
+all = ["ase>=3.22"]
+
+[project.urls]
+Documentation = "https://github.com/yourname/huitu#readme"
+Source = "https://github.com/yourname/huitu"
+Issues = "https://github.com/yourname/huitu/issues"
+
+[tool.setuptools.packages.find]
+include = ["huitu*"]
+exclude = ["examples*", "tests*", "real_data_test*"]
+
+[tool.setuptools.package-data]
+huitu = ["py.typed"]

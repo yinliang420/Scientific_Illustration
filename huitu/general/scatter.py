@@ -1,0 +1,69 @@
+"""Scatter plot with optional linear fit and error bars."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+from huitu._common import coerce_xy, finalize, prepare_axes
+
+
+def plot_scatter(
+    data,
+    ax=None,
+    journal: str = "default",
+    save=None,
+    yerr=None,
+    xerr=None,
+    fit: bool = False,
+    xlabel: str = "x",
+    ylabel: str = "y",
+    label: str | None = None,
+    **kwargs,
+):
+    """Scatter with optional ``fit=True`` linear regression overlay.
+
+    If ``data`` is a DataFrame with a third column, that column is used as
+    ``yerr`` when ``yerr`` isn't explicitly passed.
+    """
+    fig, ax = prepare_axes(ax, journal)
+
+    if isinstance(data, pd.DataFrame) and data.shape[1] >= 3 and yerr is None:
+        x = data.iloc[:, 0].to_numpy(dtype=float)
+        y = data.iloc[:, 1].to_numpy(dtype=float)
+        yerr = data.iloc[:, 2].to_numpy(dtype=float)
+    else:
+        if isinstance(data, (str, Path)):
+            df = pd.read_csv(data, sep=None, engine="python")
+            x = df.iloc[:, 0].to_numpy(dtype=float)
+            y = df.iloc[:, 1].to_numpy(dtype=float)
+            if df.shape[1] >= 3 and yerr is None:
+                yerr = df.iloc[:, 2].to_numpy(dtype=float)
+        else:
+            x, y = coerce_xy(data)
+
+    if yerr is not None or xerr is not None:
+        ax.errorbar(
+            x, y, yerr=yerr, xerr=xerr, fmt="o", capsize=2, markersize=4, label=label, **kwargs
+        )
+    else:
+        ax.scatter(x, y, s=20, label=label, **kwargs)
+
+    if fit:
+        if yerr is not None:
+            w = 1.0 / np.asarray(yerr, dtype=float)
+            slope, intercept = np.polyfit(x, y, 1, w=w)
+        else:
+            slope, intercept = np.polyfit(x, y, 1)
+        xs = np.linspace(np.min(x), np.max(x), 100)
+        ax.plot(xs, slope * xs + intercept, "r--", lw=1.0, label=f"fit: y={slope:.3g}x+{intercept:.3g}")
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    if label or fit:
+        ax.legend(loc="best")
+
+    finalize(fig, save)
+    return fig, ax

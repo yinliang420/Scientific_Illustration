@@ -1,0 +1,58 @@
+# Build artefacts
+build/
+dist/
+*.egg-info/
+*.egg
+wheels/
+pip-wheel-metadata/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# Test / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# IDE / editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Tooling state
+.claude/
+.cursor/
+
+# Generated gallery output (regenerable; too large for git)
+real_data_test/output/
+real_data_test/output_pro/
+real_data_test/output_gallery/
+real_data_test/output_pro_thumbs/
+real_data_test/output_gallery_thumbs/
+
+# Local raw / experimental data
+xrd_real_patterns_*/
+*.h5
+*.nc
+
+# Local notes / scratch
+SCRATCH*
+TODO_local*
