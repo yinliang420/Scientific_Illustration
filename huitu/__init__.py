@@ -2,7 +2,16 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
-from huitu.style import PALETTES, get_cmap, list_palettes, register_cjk, use_journal, use_palette
+from huitu.style import (
+    PALETTES,
+    SEMANTIC_PALETTE,
+    get_cmap,
+    list_palettes,
+    register_cjk,
+    role,
+    use_journal,
+    use_palette,
+)
 from huitu._common import panel_tag, supertitle
 from huitu.readers.txt_csv import read_xy
 from huitu.characterization.xrd import plot_xrd
@@ -38,6 +47,15 @@ from huitu.layout.subplots import make_subplots
 from huitu.layout.inset import add_inset
 from huitu.layout.shared_axes import share_axes
 
+# Nature-style figure archetypes + pre-submission review helpers.
+from huitu import archetype  # noqa: F401
+from huitu.review import (
+    PanelIssue,
+    check_redundancy,
+    print_redundancy_report,
+    reviewer_checklist,
+)
+
 # Formerly-premium plot helpers — now part of the standard API. The
 # ``huitu.pro`` namespace is still importable as a backward-compatible
 # alias; see ``huitu/pro/__init__.py``.
@@ -70,7 +88,9 @@ __all__ = [
     "list_palettes",
     "register_cjk",
     "get_cmap",
+    "role",
     "PALETTES",
+    "SEMANTIC_PALETTE",
     "read_xy",
     "plot_xrd",
     "plot_xps",
@@ -107,6 +127,12 @@ __all__ = [
     "share_axes",
     "panel_tag",
     "supertitle",
+    # Nature-style archetypes + review helpers
+    "archetype",
+    "PanelIssue",
+    "check_redundancy",
+    "print_redundancy_report",
+    "reviewer_checklist",
     # Advanced/statistical helpers (formerly huitu.pro.*)
     "plot_ridgeline",
     "plot_dumbbell",

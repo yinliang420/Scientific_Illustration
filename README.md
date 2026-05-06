@@ -6,6 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Matplotlib](https://img.shields.io/badge/matplotlib-3.7%2B-11557c)](https://matplotlib.org/)
 [![Style](https://img.shields.io/badge/output-600%20dpi-brightgreen)]()
+[![SVG](https://img.shields.io/badge/SVG%2FPDF-editable--text-1a73e8)]()
 
 `huitu` 把 matplotlib + scienceplots 包装成"一行出图"的体验：
 
@@ -14,17 +15,34 @@
 * **8 大期刊预设**（Nature / Science / ACS / RSC / Wiley / Elsevier / IEEE
   / default），尺寸、字号、字重、刻度、配色一次性符合规范。
 * **600 dpi 默认保存**，达到 Nature/Science/RSC 印刷标准，永远不糊。
+* **可编辑 SVG/PDF 文字** ✨ — 默认 `svg.fonttype="none"` + `pdf.fonttype=42`，
+  保存出来的图在 Illustrator / Inkscape 里能选中改字，不再被栅格成路径。
+* **语义调色板** ✨ — `huitu.role("hero")` / `role("baseline")` / `role("positive")`
+  按"科学角色"取色，整页所有 panel 都能保持配色一致。
+* **4 大 Nature 排版 archetype** ✨ —
+  `archetype.schematic_led` / `dark_image_plate` / `clinical_triptych` /
+  `asymmetric_hero`，按论证类型而不是 `subplot(2,3)` 拼图。
+* **投稿 QA 工具** ✨ — `check_redundancy()` 检查多 panel 信息是否冗余，
+  `reviewer_checklist()` 给出 reviewer 可能挑刺的字段清单。
 * **54 个调色板**（ggsci / Met-Brewer / Financial Times / Tol / Okabe-Ito /
   CARTO / Crameri / Nord / Editorial …），无需额外安装。
-* **零 license**：所有功能默认开放，没有 VIP 闸门。
 
 ```python
 import huitu
 
 huitu.use_journal("nature")
-huitu.plot_xrd("data.txt", save="fig1.pdf")          # 600 dpi automatically
+huitu.plot_xrd("data.txt", save="fig1.svg")          # ✨ SVG 文字可编辑
 huitu.plot_ridgeline(distributions, save="ridge.png")
 huitu.plot_operando_xrd_echem(Z, x=q, y=t, echem=V, save="operando.pdf")
+
+# v0.5 新加：用语义角色取色
+ax.plot(t, y_mine, color=huitu.role("hero"),     label="Ours")
+ax.plot(t, y_ref,  color=huitu.role("baseline"), label="Ref")
+
+# v0.5 新加：4 大 Nature archetype 排版
+fig, ax = huitu.archetype.schematic_led(journal="nature", n_supports=4)
+ax["hero"].imshow(schematic_image)
+huitu.plot_xrd("xrd.txt", ax=ax["supports"][0])
 ```
 
 ---
@@ -58,12 +76,12 @@ pip install -e ".[dev]"           # 加上 pytest / build / twine
 
 ### 从 wheel 装（分享给同事）
 
-到 [Releases](https://github.com/yinliang420/Scientific_Illustration/releases) 页面下载最新的 `huitu-0.4.0-py3-none-any.whl`，或在本地自行打包：
+到 [Releases](https://github.com/yinliang420/Scientific_Illustration/releases) 页面下载最新的 `huitu-0.5.0-py3-none-any.whl`，或在本地自行打包：
 
 ```bash
 pip install build && python -m build
-# → dist/huitu-0.4.0-py3-none-any.whl
-pip install dist/huitu-0.4.0-py3-none-any.whl
+# → dist/huitu-0.5.0-py3-none-any.whl
+pip install dist/huitu-0.5.0-py3-none-any.whl
 ```
 
 依赖：Python ≥ 3.9、matplotlib ≥ 3.7、numpy ≥ 1.23、pandas ≥ 1.5、
@@ -116,8 +134,122 @@ huitu.plot_operando_xrd_echem(
 | **统计 / 比较** ✨ | `plot_ridgeline` · `plot_dumbbell` · `plot_slope` · `plot_bump` · `plot_parallel` · `plot_waffle` · `plot_streamgraph` · `plot_connected_scatter` |
 | **原位 / Operando** ✨ | `plot_operando_waterfall` · `plot_operando_xrd_echem` · `plot_operando_3d_surface` · `plot_operando_diffmap` · `plot_operando_peak_evolution` · `plot_operando_contour` |
 | 排版 | `make_subplots` · `add_inset` · `share_axes` · `panel_tag` · `supertitle` |
+| **Nature archetype** ✨ v0.5 | `archetype.schematic_led` · `archetype.dark_image_plate` · `archetype.clinical_triptych` · `archetype.asymmetric_hero` |
+| **投稿 QA** ✨ v0.5 | `role` · `check_redundancy` · `print_redundancy_report` · `reviewer_checklist` |
 
-✨ = v0.4 新增，原本是付费 Pro 模块，现已全部开放。
+✨ = v0.4 新增统计/operando（原本付费 Pro），v0.5 新加 Nature 风格 archetype + QA 工具。
+
+---
+
+## ✨ v0.5 — Nature-style 升级
+
+### 1. 可编辑 SVG / PDF（不用动代码，改个 rcParams 默认值）
+
+每个期刊预设现在都包含：
+
+```python
+"svg.fonttype": "none"   # 文本保留为 <text> 节点
+"pdf.fonttype": 42       # PDF 嵌入 TrueType
+"ps.fonttype":  42
+```
+
+保存出来的 `.svg`、`.pdf` 文字都能在 Illustrator / Inkscape 选中、改字号、对齐 ——
+评审拿到 figure 不会被"文字变成贝塞尔曲线"卡住。
+
+### 2. 语义调色板：按"科学角色"取色
+
+```python
+ax.plot(t, y_mine, color=huitu.role("hero"),     label="Ours")
+ax.plot(t, y_ref,  color=huitu.role("baseline"), label="Reference")
+ax.scatter(xg, yg, color=huitu.role("positive"), marker="^")  # 涨
+ax.scatter(xd, yd, color=huitu.role("negative"), marker="v")  # 跌
+```
+
+18 个角色键值对：
+
+| 类别 | 键 | 用途 |
+|---|---|---|
+| 自己的方法 | `hero` / `hero_2` / `hero_soft` | 主方法、第二变体、第三变体 |
+| 对照 / 参比 | `baseline` / `baseline_2` / `baseline_soft` | 控制组、副参比 |
+| 方向性 | `positive` / `positive_soft` / `negative` / `negative_soft` | 涨 ↑ / 跌 ↓ |
+| 中性 | `neutral` / `neutral_light` / `neutral_dark` / `neutral_black` | 背景、参考线 |
+| 强调 | `accent_gold` / `accent_teal` / `accent_violet` / `accent_magenta` | callout、荧光通道 |
+
+也可以一次性切换全图：`huitu.use_palette("semantic")`。
+
+### 3. 四大 Nature 排版 archetype
+
+```python
+# 顶部 schematic + 底部 quant supports（材料/机理论文最常用）
+fig, ax = huitu.archetype.schematic_led(journal="nature", n_supports=4)
+ax["hero"].imshow(schematic_image)
+huitu.plot_xrd("xrd.txt",   ax=ax["supports"][0])
+huitu.plot_eis("eis.txt",   ax=ax["supports"][1])
+huitu.plot_cycle("life.txt",ax=ax["supports"][2])
+huitu.plot_cv("cv.txt",     ax=ax["supports"][3])
+
+# 显微 / 荧光黑底 grid
+fig, grid = huitu.archetype.dark_image_plate(rows=3, cols=5, journal="nature")
+for r, row in enumerate(grid):
+    for c, ax in enumerate(row):
+        ax.imshow(microscopy[r][c])
+
+# 临床 / 纵向"三段"：trajectories → forest → summary bars
+fig, ax = huitu.archetype.clinical_triptych()  # ax['top'/'mid'/'bot'] 各 3 列
+
+# 不对称：一个 panel 跨 3 行（UMAP / 圆形基因组图 / 大示意图）
+fig, ax = huitu.archetype.asymmetric_hero()
+ax["e"].set_title("hero panel")  # 跨行
+```
+
+每个 archetype 自动调用 `use_journal()`，画好小写粗体 panel label（a / b / c …），
+继承当前预设的 600 dpi + 可编辑 SVG 默认值。
+
+### 4. Anti-redundancy 检查
+
+```python
+huitu.print_redundancy_report([
+    {"id": "a", "question": "What is the composition?",
+     "encoding": "stacked_bar",     "level": "overview"},
+    {"id": "b", "question": "What is atypical per group?",
+     "encoding": "z_score_heatmap", "level": "deviation"},
+    {"id": "c", "question": "How do tumor and immune % co-vary?",
+     "encoding": "bubble_scatter",  "level": "relationship"},
+])
+# → [OK] no redundancy issues detected (3 panels).
+```
+
+会自动报警的情况：
+
+- 两个 panel 在回答**同一个**科学问题
+- 同一份 data slice 被两种图重复表达（堆叠柱 + 饼图）
+- 缺少 **Overview → Deviation → Relationship** 三层信息层级中的某一层
+- 两个 ranked-bar（应该把其中一个换成散点 / 气泡）
+
+### 5. Reviewer-risk checklist
+
+```python
+rep = huitu.reviewer_checklist(
+    figure={
+        "core_conclusion": "Cu-doped MnO2 raises capacity by 32 %",
+        "archetype": "schematic-led",
+        "final_size": "183 mm × 130 mm",
+    },
+    quantitative={
+        "n": "n=12 cells / group",
+        "biological_replicates": 3,
+        "center": "median", "spread": "IQR",
+        "test": "two-sided Wilcoxon",
+        "source_data": "fig3.csv",
+    },
+    image={"scale_bar": "50 µm", "raw_file": "raw/fig3a.tif"},
+)
+# 打印 PASS / FAIL，列出 [OK] [!!] required 缺失 / [??] recommended 缺失
+# 还返回结构化 dict 给 CI 用：rep["pass"], rep["n_required_missing"]
+```
+
+四个可选 metadata 块：`figure` / `quantitative` / `image` / `machine_learning`。
+每条对应 Springer Nature & Cell-family 期刊真实的 pre-submission checklist。
 
 ---
 
@@ -208,13 +340,13 @@ docs/showcase/                   # README 用的 6 张展示图
 
 ```bash
 pip install build
-python -m build           # → dist/huitu-0.4.0-py3-none-any.whl + .tar.gz
+python -m build           # → dist/huitu-0.5.0-py3-none-any.whl + .tar.gz
 ```
 
 把 `.whl` 发给同事即可：
 
 ```bash
-pip install huitu-0.4.0-py3-none-any.whl
+pip install huitu-0.5.0-py3-none-any.whl
 ```
 
 ---
@@ -224,8 +356,9 @@ pip install huitu-0.4.0-py3-none-any.whl
 * **v0.1** — 10 MVP 图（XRD/XPS/Raman/CV/GCD/Cycle/EIS/Bar/Scatter/Line）
 * **v0.2** — +10：FTIR / UV-Vis / PL / TGA-DSC / Bode / Tafel / Band / DOS / Heatmap / Box-Violin
 * **v0.3** — +7：Rietveld / COHP / Pourbaix / Phase diagram / Radar / Crystal + `share_axes`
-* **v0.4 (current)** — +14 高级 / 原位图，Pro 全开，600 dpi 默认，39 个 premium 调色板，标签边界严格保护
-* **v0.5 (planned)** — pymatgen 原生 `BSVasprun` 输入 · BET 等温线 · dQ/dV 曲线 · 多图组合 PDF 导出
+* **v0.4** — +14 高级 / 原位图，Pro 全开，600 dpi 默认，39 个 premium 调色板，标签边界严格保护
+* **v0.5 (current)** — Nature-style 升级：可编辑 SVG/PDF 文字 · 18-key 语义调色板（`role()`） · 4 大排版 archetype（schematic-led / dark image plate / clinical triptych / asymmetric hero） · anti-redundancy 检查 · reviewer-risk checklist
+* **v0.6 (planned)** — pymatgen 原生 `BSVasprun` 输入 · BET 等温线 · dQ/dV 曲线 · 多图组合 PDF 导出
 
 ---
 

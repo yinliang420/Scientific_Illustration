@@ -54,6 +54,53 @@ _CRAMERI_ROMA = ["#7E1900", "#A4521A", "#C7923A", "#DFCE73", "#B8CEA7", "#6EA4A8
 # Matte/low-saturation upgrade of tab10 for presentation slides.
 _BOLD_QUALITATIVE = ["#2E5E84", "#E8893C", "#3B8B43", "#C93F3F", "#8E5BA8", "#805845", "#C771A6"]
 
+# ── Semantic / role-based palette (inspired by `nature-figure`'s PALETTE) ────
+# Colors are mapped to *semantic roles*, not "first/second/third category".
+# Use this when the figure is a hero-vs-baseline comparison, or when you need
+# directional (gain / drop) cues instead of arbitrary category identity.
+#
+#   hero / hero_2     — your method / your sample (deep + medium blue)
+#   baseline / baseline_2 — control / reference (dark + soft red)
+#   positive          — improvement / gain / above mean (green)
+#   negative          — degradation / drop / below mean (red)
+#   neutral / neutral_light / neutral_mid / neutral_dark — context / scaffolding
+#   accent_*          — sparingly used callouts (gold / teal / violet)
+#
+# Reserve ``positive``/``negative`` for **directional cues** (arrows, deltas,
+# sign-of-effect) — never for category identity. That keeps green/red free as
+# universal "good/bad" signals, the way Nature/Science figures use them.
+SEMANTIC_PALETTE: dict[str, str] = {
+    "hero":         "#0F4D92",  # deep blue — proposed method / your sample
+    "hero_2":       "#3775BA",  # medium blue — secondary hero / variant
+    "hero_soft":    "#B4C0E4",  # soft blue — third-tier hero variant
+    "baseline":     "#B64342",  # brick red — reference / control
+    "baseline_2":   "#E9A6A1",  # soft red — secondary reference
+    "baseline_soft":"#F6CFCB",  # palest red — tertiary reference / band
+    "positive":     "#2E9E44",  # green — gain / improvement / above mean
+    "positive_soft":"#AADCA9",  # pale green — softer positive shade
+    "negative":     "#E53935",  # saturated red — drop / degradation / below
+    "negative_soft":"#F0A0A0",  # pale red — softer negative shade
+    "neutral":      "#767676",  # mid grey — neutral reference
+    "neutral_light":"#CFCECE",  # light grey — context fill
+    "neutral_dark": "#4D4D4D",  # dark grey — emphasis text
+    "neutral_black":"#272727",  # near-black — frames / dark text
+    "accent_gold":  "#FFD700",  # gold — sparing callout
+    "accent_teal":  "#42949E",  # teal — secondary accent
+    "accent_violet":"#9A4D8E",  # violet — tertiary accent
+    "accent_magenta":"#EA84DD", # magenta — fluorescence channel
+}
+
+# When applied as a categorical color cycle, follow the standard hero→
+# baseline→positive→negative→neutral→accents ordering.
+_SEMANTIC = [
+    SEMANTIC_PALETTE["hero"],          # 1st category = your method
+    SEMANTIC_PALETTE["baseline"],      # 2nd = baseline / control
+    SEMANTIC_PALETTE["accent_teal"],   # 3rd = secondary cool accent
+    SEMANTIC_PALETTE["accent_violet"], # 4th = tertiary accent
+    SEMANTIC_PALETTE["neutral"],       # 5th = neutral reference
+    SEMANTIC_PALETTE["accent_gold"],   # 6th = highlight callout
+]
+
 PALETTES: dict[str, list[str]] = {
     "tol-bright": _TOL_BRIGHT,
     "tol-muted": _TOL_MUTED,
@@ -70,6 +117,7 @@ PALETTES: dict[str, list[str]] = {
     "crameri-batlow": _CRAMERI_BATLOW,
     "crameri-roma": _CRAMERI_ROMA,
     "bold-qualitative": _BOLD_QUALITATIVE,
+    "semantic": _SEMANTIC,
 }
 
 # Palettes whose hex lists are ordered in a perceptually meaningful way and
@@ -188,6 +236,14 @@ _COMMON_RC = {
     "mathtext.default": "regular",
     "savefig.dpi": 600,
     "savefig.bbox": "tight",
+    # Editable text in vector exports (Nature/Cell/Illustrator/Inkscape).
+    # ``svg.fonttype='none'`` keeps text as <text> nodes, so reviewers/editors
+    # can re-align labels post-hoc instead of receiving outlined glyphs.
+    # ``pdf.fonttype=42`` and ``ps.fonttype=42`` embed TrueType outlines so
+    # selecting/searching text in the saved PDF/PS still works.
+    "svg.fonttype": "none",
+    "pdf.fonttype": 42,
+    "ps.fonttype": 42,
     "figure.dpi": 120,
     "figure.constrained_layout.use": True,
     "figure.constrained_layout.h_pad": 0.04,
@@ -391,6 +447,49 @@ def use_palette(name_or_colors) -> list[str]:
 def list_palettes() -> list[str]:
     """Return the names of all registered palettes."""
     return sorted(PALETTES)
+
+
+def role(name: str) -> str:
+    """Look up a hex color by *semantic role* rather than by category index.
+
+    Use this when the figure has a hero-vs-baseline structure, or when you
+    want directional (gain/drop) cues that stay consistent across panels.
+
+    Parameters
+    ----------
+    name
+        Role key from :data:`SEMANTIC_PALETTE`. Common keys:
+
+        * ``hero``, ``hero_2``, ``hero_soft`` — your method / sample
+        * ``baseline``, ``baseline_2``, ``baseline_soft`` — control
+        * ``positive``, ``positive_soft`` — improvement / above-mean
+        * ``negative``, ``negative_soft`` — drop / below-mean
+        * ``neutral``, ``neutral_light``, ``neutral_dark``, ``neutral_black``
+        * ``accent_gold``, ``accent_teal``, ``accent_violet``, ``accent_magenta``
+
+    Returns
+    -------
+    str
+        ``#RRGGBB`` hex string.
+
+    Raises
+    ------
+    KeyError
+        If ``name`` is not a registered role. The error lists valid roles.
+
+    Examples
+    --------
+    >>> ax.plot(x, y_mine, color=role("hero"),     label="Ours")
+    >>> ax.plot(x, y_ref,  color=role("baseline"), label="Baseline")
+    >>> ax.scatter(x_gain, y_gain, color=role("positive"), marker="^")
+    >>> ax.scatter(x_drop, y_drop, color=role("negative"), marker="v")
+    """
+    key = name.lower()
+    if key not in SEMANTIC_PALETTE:
+        raise KeyError(
+            f"unknown role '{name}'. choices: {sorted(SEMANTIC_PALETTE)}"
+        )
+    return SEMANTIC_PALETTE[key]
 
 
 def get_cmap(name: str):

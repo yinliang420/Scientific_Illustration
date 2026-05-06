@@ -2,6 +2,81 @@
 
 All notable changes to **huitu** are recorded here.
 
+## [0.5.0] — 2026-05-06
+
+Five Nature-style upgrades inspired by the
+[`Yuan1z0825/nature-skills`](https://github.com/Yuan1z0825/nature-skills)
+reference collection. The headline goal: turn `huitu` from "data → figure"
+into "conclusion → figure", and make the saved file something an editor or
+co-author can edit, not just admire.
+
+### Added
+
+- **Editable SVG/PDF text** — every preset (`default` / `nature` / `science` /
+  `acs` / `rsc` / `wiley` / `elsevier` / `ieee`) now sets
+  `svg.fonttype="none"`, `pdf.fonttype=42`, `ps.fonttype=42`. Text saved to
+  `.svg` stays as `<text>` nodes (selectable, editable in
+  Illustrator / Inkscape) instead of outlined paths; `.pdf` text is searchable
+  and copy-able. No API change required — just save and the file is editable.
+- **Semantic role palette** — new `huitu.role(name)` lookup and a
+  `"semantic"` palette name. Map color to *scientific role* rather than
+  category index:
+
+  ```python
+  ax.plot(x, y_mine, color=huitu.role("hero"),     label="Ours")
+  ax.plot(x, y_ref,  color=huitu.role("baseline"), label="Baseline")
+  ax.scatter(xg, yg, color=huitu.role("positive"), marker="^")  # gain
+  ax.scatter(xd, yd, color=huitu.role("negative"), marker="v")  # drop
+  ```
+
+  18 keyed roles: `hero` / `hero_2` / `hero_soft`, `baseline` / `baseline_2` /
+  `baseline_soft`, `positive` / `positive_soft`, `negative` / `negative_soft`,
+  `neutral` / `neutral_light` / `neutral_dark` / `neutral_black`,
+  `accent_gold` / `accent_teal` / `accent_violet` / `accent_magenta`. The
+  `SEMANTIC_PALETTE` dict is also exported.
+- **Four Nature-style figure archetypes** — new `huitu.archetype` module:
+  - `archetype.schematic_led(n_supports=4)` — hero panel up top + a row of
+    supporting quant panels; returns `{"hero": Axes, "supports": [Axes…]}`.
+  - `archetype.dark_image_plate(rows=3, cols=5)` — black-faced microscopy /
+    fluorescence grid with no spines or ticks; ready for `ax.imshow(...)`.
+  - `archetype.clinical_triptych(n_cols=3)` — three semantically parallel
+    rows (longitudinal → forest → summary); returns
+    `{"top": [Axes…], "mid": [Axes…], "bot": [Axes…]}`.
+  - `archetype.asymmetric_hero()` — 3 × 4 layout with one panel (`'e'`) that
+    spans all rows; returns `{"a"…"f": Axes}`.
+
+  Every archetype calls `use_journal()`, draws lowercase bold panel labels
+  (Nature house style), and inherits the active preset's editable-text and
+  600 dpi defaults.
+- **Anti-redundancy panel checker** — `huitu.check_redundancy(panels)` and
+  `huitu.print_redundancy_report(panels)` audit a multi-panel plan against
+  the *Overview → Deviation → Relationship* hierarchy and surface common
+  traps: same scientific question, same data slice in two visual forms,
+  pie + stacked bar, two ranked-bar panels, missing information level.
+  Returns a list of `PanelIssue(severity, panels, message)`.
+- **Reviewer-risk checklist** — `huitu.reviewer_checklist(...)` accepts up
+  to four metadata dicts (`figure`, `quantitative`, `image`,
+  `machine_learning`) and produces a structured pass/fail report that flags
+  every missing required field with a one-line hint. Targets the Nature /
+  Springer pre-submission checklist (n, replicates, center, spread, test,
+  correction, p-value display, source data, scale bar, image-integrity log,
+  ML split / seeds / metric / baseline). Pretty-prints by default, returns a
+  structured dict for CI gating.
+
+### Changed
+
+- `huitu/__init__.py` exports the five new public names: `role`,
+  `SEMANTIC_PALETTE`, `archetype`, `check_redundancy`,
+  `print_redundancy_report`, `reviewer_checklist`, `PanelIssue`.
+- `pyproject.toml` URLs now point at the published GitHub repo
+  (`yinliang420/Scientific_Illustration`).
+
+### Tests
+
+- 29 new pytest cases in `tests/test_nature_features.py` (parameterised over
+  all 8 presets for editable text, plus end-to-end SVG-write check). Total
+  suite: **82 tests**, all passing.
+
 ## [0.4.0] — 2026-04-25
 
 Major release — Pro features merged, journal-grade DPI by default,
