@@ -103,7 +103,7 @@ def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
                 "should answer one well-formed scientific question."
             ))
             continue
-        by_question.setdefault(q, []).append(p["id"])
+        by_question.setdefault(q, []).append(p.get("id", "?"))
     for q, ids in by_question.items():
         if len(ids) > 1:
             issues.append(PanelIssue(
@@ -120,7 +120,7 @@ def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
         d = (p.get("data") or "").lower().strip()
         if not d:
             continue
-        by_data.setdefault(d, []).append((p["id"], p.get("encoding", "?")))
+        by_data.setdefault(d, []).append((p.get("id", "?"), p.get("encoding", "?")))
     for d, hits in by_data.items():
         if len(hits) > 1:
             ids = tuple(h[0] for h in hits)
@@ -150,7 +150,7 @@ def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
             ))
 
     # 4. Common redundancy traps (heuristic).
-    encodings = {p["id"]: (p.get("encoding") or "").lower() for p in panels}
+    encodings = {p.get("id", "?"): (p.get("encoding") or "").lower() for p in panels}
     ranked = [pid for pid, e in encodings.items()
               if "ranked" in e or "ranking" in e]
     if len(ranked) >= 2:
@@ -307,11 +307,19 @@ def reviewer_checklist(
 ) -> dict:
     """Pre-submission reviewer-risk checklist.
 
-    Pass any of the four metadata dicts; missing keys are flagged. All four
-    sections are optional — pass only what's relevant. For a basic figure
-    with quantitative panels you'd typically pass ``figure=`` and
-    ``quantitative=``; image / ML sections only matter when those
-    modalities exist.
+    Section semantics:
+
+    * ``figure`` and ``quantitative`` are **core** — they always run.
+      Pass ``None`` (the default) and the function still flags every
+      required field as missing, so a bare ``reviewer_checklist()`` call
+      surfaces the minimum scaffolding every figure must carry
+      (core conclusion, final size, ``n``, center / spread / test, source
+      data).
+    * ``image`` and ``machine_learning`` are **modality-specific** opt-ins.
+      Omit the parameter (leave as ``None``) and the section is skipped
+      silently. Pass any dict — even ``{}`` — and the section runs and
+      surfaces missing required fields. Use this when the figure has
+      microscopy / blot panels or ML metrics; otherwise leave them off.
 
     Parameters
     ----------
@@ -359,16 +367,25 @@ def reviewer_checklist(
     """
     report: dict = {"sections": [], "n_required_missing": 0,
                     "n_recommended_missing": 0}
+    # Section policy:
+    #   * Figure / Quantitative are core — coerce ``None`` → ``{}`` so they
+    #     always run; missing required fields then surface as failures.
+    #   * Image / ML are modality opt-ins — skip when ``None``; run when the
+    #     user passes any dict (even ``{}``). That way passing
+    #     ``image={}`` flags every required image field as missing, but
+    #     omitting ``image=`` keeps the report quiet for figures with no
+    #     image panels.
     sections = [
-        ("Figure",       figure or {},          _FIGURE_FIELDS),
-        ("Quantitative", quantitative or {},    _QUANT_FIELDS),
-        ("Image",        image or {},           _IMAGE_FIELDS),
-        ("ML / model",   machine_learning or {},_ML_FIELDS),
+        ("Figure",       {} if figure       is None else figure,       _FIGURE_FIELDS, True),
+        ("Quantitative", {} if quantitative is None else quantitative, _QUANT_FIELDS,  True),
+        ("Image",        image,                                        _IMAGE_FIELDS,  False),
+        ("ML / model",   machine_learning,                             _ML_FIELDS,     False),
     ]
-    for sec_name, payload, fields in sections:
-        if not payload and sec_name not in ("Figure", "Quantitative"):
-            # Skip optional sections that the user did not pass.
+    for sec_name, payload, fields, always_run in sections:
+        if payload is None and not always_run:
+            # User did not pass an opt-in section — skip it silently.
             continue
+        payload = payload or {}
         rows = []
         for key, label, severity, hint in fields:
             value = payload.get(key)

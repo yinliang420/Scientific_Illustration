@@ -229,10 +229,11 @@ _PRESETS = {
 # sans-serif Helvetica stack, all four spines visible, thinner axes, tighter
 # legends/ticks, and minor ticks on by default.
 _COMMON_RC = {
-    # Helvetica Neue / Helvetica resolve on macOS desktop work; Liberation Sans
-    # / DejaVu Sans are the Linux CI fallbacks. Arial covers most Windows boxes.
-    "font.family": ["Helvetica Neue", "Helvetica", "Arial", "Liberation Sans", "DejaVu Sans"],
-    "font.sans-serif": ["Helvetica Neue", "Helvetica", "Arial", "Liberation Sans", "DejaVu Sans"],
+    # Helvetica Neue / Helvetica resolve on macOS desktop work; DejaVu Sans is
+    # matplotlib's bundled fallback (Linux CI / vanilla Windows). Arial covers
+    # most Windows boxes.
+    "font.family": ["Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans"],
+    "font.sans-serif": ["Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans"],
     "mathtext.default": "regular",
     "savefig.dpi": 600,
     "savefig.bbox": "tight",

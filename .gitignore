@@ -47,6 +47,7 @@ real_data_test/output_pro/
 real_data_test/output_gallery/
 real_data_test/output_pro_thumbs/
 real_data_test/output_gallery_thumbs/
+real_data_test/test_v05_features/output/
 
 # Local raw / experimental data
 xrd_real_patterns_*/

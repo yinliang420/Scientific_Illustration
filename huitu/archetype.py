@@ -37,12 +37,22 @@ from huitu.style import use_journal
 
 # ── Internal helpers ────────────────────────────────────────────────────────
 
-def _label(ax, letter: str, *, x: float = -0.06, y: float = 1.02,
+def _label(ax, letter: str, *, xpad: float = -18, ypad: float = 4,
            color: str = "black", size: int = 8, weight: str = "bold") -> None:
-    """Place a Nature-style lowercase panel label."""
-    ax.text(x, y, letter, transform=ax.transAxes,
-            fontsize=size, fontweight=weight, color=color,
-            ha="left", va="bottom")
+    """Place a Nature-style lowercase panel label.
+
+    The label is anchored to the axes' top-left corner and offset by
+    ``(xpad, ypad)`` *points* (positive y = up, negative x = left) so the
+    letter sits in the figure margin instead of overlapping the panel's
+    y-axis tick labels — a common collision under constrained layout.
+    """
+    ax.annotate(
+        letter,
+        xy=(0, 1), xycoords="axes fraction",
+        xytext=(xpad, ypad), textcoords="offset points",
+        ha="left", va="bottom",
+        fontsize=size, fontweight=weight, color=color,
+    )
 
 
 def _label_inside(ax, letter: str, *, color: str = "white",
@@ -110,7 +120,8 @@ def schematic_led(
     panel_labels
         Whether to draw lowercase bold panel letters (a, b, c, …).
     hspace, wspace
-        Gridspec spacing between the rows / between support panels.
+        Retained for backward-compat; ignored under constrained layout
+        (matplotlib repacks the grid automatically).
 
     Returns
     -------
@@ -133,11 +144,10 @@ def schematic_led(
     use_journal(journal)
     if figsize is None:
         figsize = (7.2, 6.2)
-    fig = plt.figure(figsize=figsize, constrained_layout=False)
+    fig = plt.figure(figsize=figsize, constrained_layout=True)
     gs = fig.add_gridspec(
         2, n_supports,
         height_ratios=[hero_height_ratio, 1.0],
-        hspace=hspace, wspace=wspace,
     )
     hero = fig.add_subplot(gs[0, :])
     supports = [fig.add_subplot(gs[1, i]) for i in range(n_supports)]
@@ -186,7 +196,7 @@ def dark_image_plate(
         If ``True`` (default), label only the first cell of each row (Nature
         convention for repeated views). If ``False``, every cell is labelled.
     hspace, wspace
-        Gridspec gutters. Tight gutters keep the plate reading as one unit.
+        Retained for backward-compat; ignored under constrained layout.
 
     Returns
     -------
@@ -197,8 +207,8 @@ def dark_image_plate(
     use_journal(journal)
     if figsize is None:
         figsize = (7.2, 6.5)
-    fig = plt.figure(figsize=figsize, constrained_layout=False)
-    gs = fig.add_gridspec(rows, cols, hspace=hspace, wspace=wspace)
+    fig = plt.figure(figsize=figsize, constrained_layout=True)
+    gs = fig.add_gridspec(rows, cols)
     grid: list[list[plt.Axes]] = []
     n_total = rows * cols
     letters = _flat_letters(n_total)
@@ -250,7 +260,7 @@ def clinical_triptych(
     panel_labels
         Draw lowercase letters near each panel's top-left edge.
     hspace, wspace
-        Gridspec spacing.
+        Retained for backward-compat; ignored under constrained layout.
 
     Returns
     -------
@@ -261,11 +271,10 @@ def clinical_triptych(
     use_journal(journal)
     if figsize is None:
         figsize = (7.2, 6.8)
-    fig = plt.figure(figsize=figsize, constrained_layout=False)
+    fig = plt.figure(figsize=figsize, constrained_layout=True)
     gs = fig.add_gridspec(
         3, n_cols,
         height_ratios=list(height_ratios),
-        hspace=hspace, wspace=wspace,
     )
     top = [fig.add_subplot(gs[0, i]) for i in range(n_cols)]
     mid = [fig.add_subplot(gs[1, i]) for i in range(n_cols)]
@@ -312,7 +321,7 @@ def asymmetric_hero(
     panel_labels
         Draw lowercase letters near each panel's top-left edge.
     hspace, wspace
-        Gridspec spacing.
+        Retained for backward-compat; ignored under constrained layout.
 
     Returns
     -------
@@ -324,8 +333,8 @@ def asymmetric_hero(
     use_journal(journal)
     if figsize is None:
         figsize = (7.2, 5.8)
-    fig = plt.figure(figsize=figsize, constrained_layout=False)
-    gs = fig.add_gridspec(3, 4, hspace=hspace, wspace=wspace)
+    fig = plt.figure(figsize=figsize, constrained_layout=True)
+    gs = fig.add_gridspec(3, 4)
     ax_a = fig.add_subplot(gs[0, :2])
     ax_b = fig.add_subplot(gs[0, 2])
     ax_c = fig.add_subplot(gs[1, :2])
