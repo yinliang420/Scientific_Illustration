@@ -2,6 +2,53 @@
 
 All notable changes to **huitu** are recorded here.
 
+## [0.5.1] — 2026-05-06
+
+Patch release: bug fixes surfaced by a 3-agent test-review-fix iteration
+(`real_data_test/test_v05_features/`). All v0.5 features remain unchanged
+in scope, just hardened.
+
+### Fixed
+
+- **`huitu.review.check_redundancy`** — three sites used `p["id"]` without a
+  default, raising `KeyError` when a panel dict lacked `id`. Now produces a
+  proper `PanelIssue` with `"?"` placeholder. Reproducer:
+  `check_redundancy([{"question": "Q?", "encoding": "stacked_bar"}])`.
+- **`huitu.review.reviewer_checklist` section policy** — explicit split
+  between *core* and *opt-in* sections:
+  - `figure` and `quantitative` are core: ``None`` → ``{}`` so they always
+    run, surfacing missing required fields. A bare `reviewer_checklist()`
+    call now correctly fails on missing core scaffolding (Fig 1 conclusion,
+    final size, n / center / spread / test / source data).
+  - `image` and `machine_learning` are modality opt-ins: omitting the
+    parameter (`None`) skips silently; passing any dict (even ``{}``)
+    enables the section. Closes a v0.5.0 regression where `machine_learning={}`
+    was silently dropped.
+- **`huitu.archetype.{schematic_led, dark_image_plate, clinical_triptych,
+  asymmetric_hero}`** — switched to `constrained_layout=True` (was
+  `False`, defeating the library-wide default). Eliminates panel-`b`
+  tick labels touching panel `a`, restores the missing colorbar in
+  `asymmetric_hero`'s panel `f`, and balances support panels in
+  `schematic_led` when one is `equal_aspect=True` (e.g. `plot_eis`).
+- **`huitu.archetype._label`** — switched panel-letter placement from
+  axes-fraction (`x=-0.06, y=1.02`) to absolute point-pad (`xpad=-18,
+  ypad=4`) via `ax.annotate(..., textcoords="offset points")`. Letters
+  now sit in the figure margin instead of overlapping the panel's
+  y-axis label on tight grids.
+- **`huitu.style`** — removed `"Liberation Sans"` from the font family
+  fallback stack. Never installed on macOS or vanilla Windows; matplotlib
+  still falls through to `DejaVu Sans`. Eliminates ~24 `findfont` warnings
+  per draw.
+
+### Tests
+
+- 5 new end-to-end test scripts in `real_data_test/test_v05_features/`
+  exercising every v0.5 feature against real sample data
+  (`test_01_editable_text.py`, `..._semantic_palette`, `..._archetypes`,
+  `..._redundancy`, `..._reviewer_checklist`) plus a `run_all.sh` driver.
+  Used by the 3-agent iteration; output PNG/SVG dir is gitignored.
+- Existing pytest suite still **82/82 passing**.
+
 ## [0.5.0] — 2026-05-06
 
 Five Nature-style upgrades inspired by the
