@@ -76,12 +76,12 @@ pip install -e ".[dev]"           # 加上 pytest / build / twine
 
 ### 从 wheel 装（分享给同事）
 
-到 [Releases](https://github.com/yinliang420/Scientific_Illustration/releases) 页面下载最新的 `huitu-0.5.0-py3-none-any.whl`，或在本地自行打包：
+到 [Releases](https://github.com/yinliang420/Scientific_Illustration/releases) 页面下载最新的 `huitu-0.5.1-py3-none-any.whl`，或在本地自行打包：
 
 ```bash
 pip install build && python -m build
-# → dist/huitu-0.5.0-py3-none-any.whl
-pip install dist/huitu-0.5.0-py3-none-any.whl
+# → dist/huitu-0.5.1-py3-none-any.whl
+pip install dist/huitu-0.5.1-py3-none-any.whl
 ```
 
 依赖：Python ≥ 3.9、matplotlib ≥ 3.7、numpy ≥ 1.23、pandas ≥ 1.5、
@@ -340,13 +340,13 @@ docs/showcase/                   # README 用的 6 张展示图
 
 ```bash
 pip install build
-python -m build           # → dist/huitu-0.5.0-py3-none-any.whl + .tar.gz
+python -m build           # → dist/huitu-0.5.1-py3-none-any.whl + .tar.gz
 ```
 
 把 `.whl` 发给同事即可：
 
 ```bash
-pip install huitu-0.5.0-py3-none-any.whl
+pip install huitu-0.5.1-py3-none-any.whl
 ```
 
 ---
