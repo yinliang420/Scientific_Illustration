@@ -70,7 +70,33 @@ Apply with `journal="..."` (or directly: `huitu.use_journal(name)`).
 | `elsevier` | `science`                  | 90 mm x 70 mm        | 8 pt      | 0.8        |
 | `ieee`     | `science, ieee`            | 3.5 x 2.5            | 8 pt      | 0.8        |
 
-Shared across every preset: Arial -> DejaVu Sans font stack, 300 dpi save, black axes, ticks drawn inward on all four sides, legend frame off, `text.usetex=False` so no LaTeX install required. If `scienceplots` cannot be imported, the preset falls back to plain matplotlib rcParams with the same sizes.
+Shared across every preset: Helvetica -> Arial -> DejaVu Sans font stack, **600 dpi savefig** (journal grade), **`svg.fonttype="none"` + `pdf.fonttype=42`** so saved SVG/PDF text stays editable in Illustrator/Inkscape, black axes, ticks on all four sides, legend frame off, `text.usetex=False` so no LaTeX install required. If `scienceplots` cannot be imported, the preset falls back to plain matplotlib rcParams with the same sizes.
+
+## Nature-style helpers (v0.5)
+
+Five additions that turn `huitu` from "data → figure" into "conclusion → figure":
+
+| Helper                                | What it does                                                                                       |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `huitu.role(name)`                    | Look up a hex color by *scientific role* (`hero` / `baseline` / `positive` / `negative` / …)        |
+| `huitu.use_palette("semantic")`       | Switch the color cycle to the role-based palette (hero → baseline → accent → neutral)             |
+| `huitu.archetype.schematic_led`       | Hero panel + supporting quant row — the canonical materials/mechanism layout                       |
+| `huitu.archetype.dark_image_plate`    | Black-faced microscopy / fluorescence grid (no spines, no ticks, ready for `imshow`)               |
+| `huitu.archetype.clinical_triptych`   | 3-row × 3-col layout: longitudinal → forest → summary, columns kept semantically parallel         |
+| `huitu.archetype.asymmetric_hero`     | 3 × 4 grid with one panel spanning all rows (UMAP, circular plot, dominant schematic)             |
+| `huitu.check_redundancy(panels)`      | Warn when two panels answer the same question, share a data slice, or skip the info hierarchy     |
+| `huitu.print_redundancy_report(...)`  | Pretty-prints the above to stdout                                                                  |
+| `huitu.reviewer_checklist(...)`       | Pre-submission checklist (n / replicates / center / spread / test / source data / scale bar / …) |
+
+Use them either standalone or in combination with the `plot_*` functions:
+
+```python
+fig, ax = huitu.archetype.schematic_led(journal="nature", n_supports=3)
+huitu.plot_xrd("xrd.txt", ax=ax["supports"][0])
+huitu.plot_eis("eis.txt", ax=ax["supports"][1])
+huitu.plot_cycle("cyc.txt", ax=ax["supports"][2])
+fig.savefig("fig1.svg")        # text remains editable in Illustrator
+```
 
 ## Two usage modes
 
