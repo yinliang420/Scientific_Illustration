@@ -49,6 +49,11 @@ real_data_test/output_pro_thumbs/
 real_data_test/output_gallery_thumbs/
 real_data_test/test_v05_features/output/
 
+# Inspirations: figures4papers regenerate their PNGs locally; not in git.
+docs/inspirations/figures4papers/**/figures/
+docs/inspirations/figures4papers/**/*.png
+docs/inspirations/figures4papers/**/*.pdf
+
 # Local raw / experimental data
 xrd_real_patterns_*/
 *.h5
