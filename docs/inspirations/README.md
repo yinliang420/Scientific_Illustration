@@ -55,6 +55,24 @@ layout.
 | Sweep / 优化进度 | `figure_RNAGenScape/plot_sweep.py` | `plot_line` + `plot_scatter` 叠加 |
 | Composition / 堆叠贡献 | `figure_brainteaser/plot_correctness_*` | `plot_bar(stacked=True)` · `plot_streamgraph` |
 
+### Prerequisites per demo — not all of them run "out of the box"
+
+6 of the 9 projects run on a vanilla `matplotlib + numpy` install. The
+other 3 need extra setup. Verified by running each demo locally
+(2026-05-18, Python 3.13, matplotlib 3.10):
+
+| Project | Status | What's needed |
+|---|---|---|
+| `figure_CellSpliceNet`   | ✅ runs immediately | — |
+| `figure_Cflows`          | ✅ runs immediately | — |
+| `figure_Dispersion`      | ✅ for `plot_idea.py`; ⚠️ `plot_illustration.py` needs **LaTeX** (`text.usetex=True`) | install MacTeX/TeX Live or set `usetex=False` |
+| `figure_ImmunoStruct`    | ✅ runs immediately | — (data inlined in `raw_data.py`) |
+| `figure_VIGIL`           | ✅ runs immediately | — |
+| `figure_brainteaser`     | ✅ runs immediately | — |
+| `figure_FPGM`            | ❌ needs **external `./data/` directory** | not shipped (upstream omits it too); provide your own `.npy`/`.pt` frequency-prior tensors |
+| `figure_RNAGenScape`     | ❌ needs **LaTeX** (`text.usetex=True`) | install MacTeX/TeX Live, or patch the scripts to set `usetex=False` |
+| `figure_ophthal_review`  | ❌ needs **LaTeX + seaborn** | `pip install seaborn` *and* install a TeX distribution |
+
 ### Run them locally (optional)
 
 ```bash
@@ -62,7 +80,10 @@ cd docs/inspirations/figures4papers/figure_ImmunoStruct/
 python plot_bars.py    # PNG outputs land in figures/ (gitignored)
 ```
 
-Each script is self-contained and uses only `matplotlib + numpy`.
+Each script is self-contained and uses only `matplotlib + numpy` unless
+flagged above. The huitu `SKILL.md` (top-level) carries the same
+prerequisite table so Claude sessions can warn users before pointing them
+at a demo that won't run on their machine.
 
 ---
 
