@@ -162,6 +162,59 @@ fig.savefig("custom.pdf")
 
 Pre-generated synthetic samples live under `examples/sample_data/` (regenerate with `python examples/sample_data/_generate.py`).
 
+## Bundled reference demos (`docs/inspirations/figures4papers/`)
+
+`huitu` ships a read-only snapshot of nine real-paper plotting scripts from
+[`Yuan1z0825/nature-skills`](https://github.com/Yuan1z0825/nature-skills) /
+[`ChenLiu-1996/figures4papers`](https://github.com/ChenLiu-1996/figures4papers).
+These are **reference cookbooks**, not part of huitu's import surface.
+Use them as visual examples for `plot_*` and `archetype.*` patterns. Each
+project sits in its own folder and is intended to be run from that folder:
+
+```bash
+cd docs/inspirations/figures4papers/figure_ImmunoStruct/
+python plot_bars.py    # PNG lands in figures/ (gitignored)
+```
+
+### Demo prerequisites — different demos need different data sources
+
+Before running or pointing a user at a specific demo, check this table.
+Six demos run out of the box on `matplotlib + numpy` only; three need
+extra setup. If a user only has `matplotlib + numpy + pandas` installed,
+prefer the green ones.
+
+| Project | Runs out of the box? | Extra requirement |
+|---|---|---|
+| `figure_CellSpliceNet`   | ✅ | — |
+| `figure_Cflows`          | ✅ | — |
+| `figure_Dispersion`      | ✅ for `plot_idea.py` · ⚠️ `plot_illustration.py` needs LaTeX | `text.usetex=True` |
+| `figure_ImmunoStruct`    | ✅ | — (data is inlined in `raw_data.py`) |
+| `figure_VIGIL`           | ✅ | — |
+| `figure_brainteaser`     | ✅ | — |
+| `figure_FPGM`            | ❌ | **External data**: needs `./data/` directory with project-specific `.npy` / `.pt` files (not shipped — upstream omits it too). User must provide their own dataset before running. |
+| `figure_RNAGenScape`     | ❌ | **LaTeX**: scripts set `plt.rcParams['text.usetex'] = True` and use real LaTeX in axis labels. Install MacTeX (macOS) / TeX Live (Linux/Windows) or patch the scripts to set `usetex=False`. |
+| `figure_ophthal_review`  | ❌ | **LaTeX + seaborn**: same `usetex=True` requirement; also `import seaborn as sns`. Install `seaborn` via pip plus a TeX distribution. |
+
+### When pointing a user at a demo
+
+1. **First check the table above** — confirm the demo doesn't need a data
+   source or environment the user lacks.
+2. **If the user needs a chart like one of the LaTeX-dependent demos** but
+   doesn't have LaTeX, suggest patching the script: replace
+   `plt.rcParams['text.usetex'] = True` with `False`, or remove
+   LaTeX-flavored math (`$\\frac{a}{b}$` → `a / b`) before running.
+3. **If the user needs `figure_FPGM`**, ask whether they already have the
+   pre-trained frequency-prior tensors they want to plot; without those,
+   the script can't produce a meaningful figure regardless of environment.
+4. **Never silently swallow these failures** — if a demo doesn't run, tell
+   the user *which* missing dependency is the cause (data dir / LaTeX /
+   seaborn) and what to do about it.
+
+The chart-family routing table in
+[`docs/inspirations/README.md`](docs/inspirations/README.md) maps each demo
+to the closest huitu function, so for most use-cases you can read the demo
+for pattern reference without actually executing it.
+
 ## Extension roadmap
 
 - **v0.2 (shipped)**: FTIR, UV-Vis/Tauc, PL, TGA+DSC, Bode, Tafel, band, DOS/PDOS, heatmap/contour, box/violin.

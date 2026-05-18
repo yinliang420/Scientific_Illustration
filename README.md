@@ -253,6 +253,40 @@ rep = huitu.reviewer_checklist(
 
 ---
 
+## 💡 Inspirations / 参考素材（v0.5.1 新加）
+
+`docs/inspirations/` 是个**只读参考库**，不被 huitu 包导入，但 `git clone` 之后立刻就有：
+
+### `figures4papers/` — 9 个真实 paper 画图代码
+
+从 [`Yuan1z0825/nature-skills`](https://github.com/Yuan1z0825/nature-skills) → [`ChenLiu-1996/figures4papers`](https://github.com/ChenLiu-1996/figures4papers) 镜像，覆盖 NMI / ICML / NeurIPS / clinical review 风格：
+
+| 你想画的图 | 看哪个 demo | 配套 huitu 函数 |
+|---|---|---|
+| 多方法 grouped bar | `figure_ImmunoStruct/plot_bars.py` | `plot_bar` + `huitu.role("hero" / "baseline")` |
+| Ablation bar（alpha 渐变） | `figure_CellSpliceNet/plot_ablation.py` | `plot_bar` |
+| Radar / polar 多 benchmark | `figure_VIGIL/plot_comparison_radar.py` | `plot_radar` |
+| 训练 / 时间 trend | `figure_VIGIL/plot_posttraining.py` | `plot_line` |
+| Heatmap / 矩阵 | `figure_RNAGenScape/plot_*` | `plot_heatmap` |
+| 概念 3D 球体 / 示意 | `figure_Dispersion/plot_illustration.py` | `archetype.schematic_led['hero']` + `imshow` |
+| Composition / 堆叠 | `figure_brainteaser/plot_correctness_*` | `plot_bar(stacked=True)` |
+
+> ⚠️ 9 个 demo 里 **6 个开箱即跑**，3 个需要 LaTeX 或外部数据 —— 详见 [`docs/inspirations/README.md`](docs/inspirations/) 里的前置依赖表。
+
+### `skills/` — 5 个 Nature 风 Claude Code skill
+
+```bash
+cp -R docs/inspirations/skills/nature-citation       ~/.claude/skills/   # 自动加 CNS 引用
+cp -R docs/inspirations/skills/nature-academic-search ~/.claude/skills/  # PubMed/CrossRef/arXiv 搜索（带 MCP）
+cp -R docs/inspirations/skills/nature-writing        ~/.claude/skills/   # 整段 Nature 写作
+cp -R docs/inspirations/skills/nature-response       ~/.claude/skills/   # Reviewer 回复信
+cp -R docs/inspirations/skills/nature-reader         ~/.claude/skills/   # 中英对照阅读器
+```
+
+`huitu` 主仓库本身专注于 plotting；这 5 个 skill 是配套的写作工作流，可选装。
+
+---
+
 ## 🎨 调色板
 
 ```python
@@ -293,8 +327,10 @@ cmap = huitu.get_cmap("crameri-batlow")
 * **[USAGE.md](USAGE.md)** — 中文实操指南（推荐新手起步）
 * **[SKILL.md](SKILL.md)** — 完整 API catalog · 期刊预设详表 · quirks · 数据格式规范
 * **[CHANGELOG.md](CHANGELOG.md)** — 版本变更记录
+* **[docs/inspirations/](docs/inspirations/)** — 9 个真实 paper 画图脚本（`figures4papers`）+ 5 个 Nature 风 skill（citation / search / writing / response / reader），带 chart-family 路由表 ✨ v0.5.1
 * `examples/` — 31 个可独立运行的脚本，附合成样例数据
 * `real_data_test/test_pro_gallery.py` — 322 个高级图场景
+* `real_data_test/test_v05_features/` — v0.5 features 端到端测试（5 个脚本 + `run_all.sh`）
 
 ---
 
@@ -303,7 +339,11 @@ cmap = huitu.get_cmap("crameri-batlow")
 ```bash
 # 单元测试
 python -m pytest tests/ -v
-# 53 passed
+# 82 passed (53 旧 + 29 v0.5 Nature features)
+
+# v0.5 features 端到端测试（5 个脚本，21 个输出图）
+bash real_data_test/test_v05_features/run_all.sh
+# [ALL OK] every script passed
 
 # 整套高级图 gallery（生成 322 张 600 dpi PNG + PDF）
 python real_data_test/test_pro_gallery.py
@@ -316,8 +356,10 @@ python real_data_test/test_pro_gallery.py
 
 ```
 huitu/
-├── __init__.py                  # 44 个 plot_* 顶层 API
-├── style.py                     # 8 期刊预设 + 54 调色板 + 600 dpi 默认
+├── __init__.py                  # 44 plot_* + role + archetype + QA 顶层 API
+├── style.py                     # 8 期刊预设 + 55 调色板（含 semantic）+ 600 dpi + 可编辑 SVG/PDF
+├── archetype.py                 # ✨ v0.5 — 4 个 Nature 排版 (schematic_led / dark_image_plate / clinical_triptych / asymmetric_hero)
+├── review.py                    # ✨ v0.5 — check_redundancy + reviewer_checklist
 ├── _common.py                   # 输入归一化 / axes 准备 / 注释边界保护
 ├── readers/txt_csv.py           # 支持 # / % 注释，tab/空白/逗号分隔
 ├── characterization/            # xrd, xps, raman, ftir, uvvis, pl, thermal, rietveld, operando
@@ -329,9 +371,15 @@ huitu/
     ├── palettes.py              # 39 个 premium 调色板
     └── ridgeline.py / comparison.py / advanced.py / operando_pro.py
 examples/                        # 31 个可运行脚本 + sample_data/
-tests/                           # 53 个 pytest
-real_data_test/                  # 322 场景大图库
-docs/showcase/                   # README 用的 6 张展示图
+tests/                           # 82 个 pytest（53 旧 + 29 v0.5）
+real_data_test/
+├── test_pro_gallery.py          # 322 场景大图库
+└── test_v05_features/           # ✨ v0.5 features 端到端测试（5 个脚本 + run_all.sh）
+docs/
+├── showcase/                    # README 用的 6 张展示图
+└── inspirations/                # ✨ v0.5.1 — 9 真实 paper demo + 5 Nature skill（只读参考库）
+    ├── figures4papers/          # ImmunoStruct / CellSpliceNet / VIGIL / brainteaser / ...
+    └── skills/                  # nature-citation / -academic-search / -writing / -response / -reader
 ```
 
 ---
@@ -357,7 +405,8 @@ pip install huitu-0.5.1-py3-none-any.whl
 * **v0.2** — +10：FTIR / UV-Vis / PL / TGA-DSC / Bode / Tafel / Band / DOS / Heatmap / Box-Violin
 * **v0.3** — +7：Rietveld / COHP / Pourbaix / Phase diagram / Radar / Crystal + `share_axes`
 * **v0.4** — +14 高级 / 原位图，Pro 全开，600 dpi 默认，39 个 premium 调色板，标签边界严格保护
-* **v0.5 (current)** — Nature-style 升级：可编辑 SVG/PDF 文字 · 18-key 语义调色板（`role()`） · 4 大排版 archetype（schematic-led / dark image plate / clinical triptych / asymmetric hero） · anti-redundancy 检查 · reviewer-risk checklist
+* **v0.5.0** — Nature-style 升级：可编辑 SVG/PDF 文字 · 18-key 语义调色板（`role()`） · 4 大排版 archetype（schematic-led / dark image plate / clinical triptych / asymmetric hero） · anti-redundancy 检查 · reviewer-risk checklist
+* **v0.5.1 (current)** — 3-agent test-review-fix 迭代修的 6 个 bug + 1 个 reviewer_checklist regression；`docs/inspirations/` 镜像 9 个真实 paper demo + 5 个 Nature 风 skill 作为参考库
 * **v0.6 (planned)** — pymatgen 原生 `BSVasprun` 输入 · BET 等温线 · dQ/dV 曲线 · 多图组合 PDF 导出
 
 ---
