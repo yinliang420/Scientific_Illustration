@@ -61,7 +61,11 @@ huitu.plot_xrd("xrd.txt", ax=ax["supports"][0])
 
 ## 📦 安装
 
-### 从源码装（推荐）
+`huitu` 有**两条互不冲突**的安装路径——你可以同时用，也可以只用一条。
+
+### A. 作为 Python 包 (`import huitu`)
+
+写代码 / 跑脚本 / Jupyter 里用：
 
 ```bash
 git clone https://github.com/yinliang420/Scientific_Illustration.git
@@ -71,18 +75,61 @@ pip install -e ".[crystal]"       # 加上 ASE 晶体渲染
 pip install -e ".[dev]"           # 加上 pytest / build / twine
 ```
 
-### 从 wheel 装（分享给同事）
-
-到 [Releases](https://github.com/yinliang420/Scientific_Illustration/releases) 页面下载最新的 `huitu-0.6.0-py3-none-any.whl`，或在本地自行打包：
+或者从 [Releases](https://github.com/yinliang420/Scientific_Illustration/releases) 下载 `huitu-0.6.0-py3-none-any.whl`：
 
 ```bash
-pip install build && python -m build
-# → dist/huitu-0.6.0-py3-none-any.whl
-pip install dist/huitu-0.6.0-py3-none-any.whl
+pip install huitu-0.6.0-py3-none-any.whl
 ```
 
-依赖：Python ≥ 3.9、matplotlib ≥ 3.7、numpy ≥ 1.23、pandas ≥ 1.5、
-scipy ≥ 1.10、scienceplots ≥ 2.0、Pillow ≥ 9.0。
+依赖：Python ≥ 3.9、matplotlib ≥ 3.7、numpy ≥ 1.23、pandas ≥ 1.5、scipy ≥ 1.10、scienceplots ≥ 2.0、Pillow ≥ 9.0。
+
+### B. 作为 Claude Code / Codex 智能体 SKILL
+
+让 Claude Code / Codex 在你说 **"帮我画 XRD"** / **"plot a CV curve"** / **"BET 等温线"** / **"reviewer checklist"** 之类的查询时**自动激活** huitu——无需 `import` 也不用手写代码：
+
+#### Claude Code
+
+```bash
+# 整个 huitu_skills 仓库目录复制到 ~/.claude/skills/huitu/
+cp -R Scientific_Illustration ~/.claude/skills/huitu
+
+# 或保留软链（仓库 git pull 后会自动跟新）
+ln -s "$PWD/Scientific_Illustration" ~/.claude/skills/huitu
+```
+
+验证：
+
+```bash
+ls ~/.claude/skills/huitu/SKILL.md && \
+  head -3 ~/.claude/skills/huitu/SKILL.md
+# 应输出: ---  / name: huitu  / description: >-
+```
+
+下次 Claude Code 会话只要触发词出现在你的 query 中（见 [SKILL.md](SKILL.md) `## When to use this skill`），huitu 就会被自动加载。
+
+#### Codex CLI
+
+Codex 用同样的 skill 协议；安装路径是 `~/.codex/skills/`：
+
+```bash
+mkdir -p ~/.codex/skills/
+cp -R Scientific_Illustration ~/.codex/skills/huitu
+# 验证（应该看到 frontmatter 前 3 行）
+head -3 ~/.codex/skills/huitu/SKILL.md
+```
+
+如果你用 Codex plugin marketplace 管理 skill，把 huitu_skills 当成一个 skill 包发布到 marketplace 也可以。
+
+#### 卸载
+
+```bash
+rm -rf ~/.claude/skills/huitu     # Claude Code
+rm -rf ~/.codex/skills/huitu      # Codex
+```
+
+不影响 `pip install` 的 Python 包；两条安装路径互相独立。
+
+> ⚠️ **同时也得装 Python 包**：smart agent 调起 huitu 后，最终会跑 `python -c "import huitu; huitu.plot_xrd(...)"`，所以**两条路径建议都装**。仅装 skill 不装 pip 包 → agent 看得到 API catalogue 但无法真正出图。
 
 ---
 
