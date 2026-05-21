@@ -110,9 +110,17 @@ def plot_xrd(
                 if abs(pos_f - prev_pos) < 0.03 * x_range and not prev_high:
                     high = True
             y_txt = top * (1.10 if high else 1.02)
-            ax.text(pos_f, y_txt, tag, ha="center", va="bottom", fontsize=6)
+            ax.annotate(
+                tag, xy=(pos_f, y_txt), xytext=(0, 4),
+                textcoords="offset points",
+                ha="center", va="bottom", fontsize=6,
+                bbox=dict(facecolor="white", edgecolor="none",
+                          alpha=0.85, pad=0.3),
+            )
             prev_pos = pos_f
             prev_high = high
+        # Expand y-limit so labels don't clip at the top of the axes.
+        ax.margins(y=0.08)
 
     place_legend(ax, labels, traces=traces, legend=legend)
 

@@ -129,6 +129,8 @@ def plot_band(
     journal: str = "default",
     save=None,
     kpoints: Sequence[Tuple[str, float]] | None = None,
+    k_labels: Sequence[str] | None = None,
+    k_ticks: Sequence[float] | None = None,
     ylim: tuple | None = None,
     color: str = "#262626",
     linewidth: float = 0.6,
@@ -142,6 +144,11 @@ def plot_band(
     kpoints
         Sequence of ``(label, kpath_value)`` for high-symmetry tick marks.
         Vertical solid lines are drawn at each position.
+    k_labels, k_ticks
+        Convenience pair: list of high-symmetry labels (e.g. ``["Γ", "X", "M",
+        "Γ"]``) and matching tick positions along the k-path. When both are
+        supplied, used in place of ``kpoints`` and a faint vertical line is
+        drawn at each tick to mark the segment boundaries.
     """
     fig, ax = prepare_axes(ax, journal)
     arr, auto_kpoints = _to_band_array(data)
@@ -164,7 +171,12 @@ def plot_band(
     if ylim is not None:
         ax.set_ylim(*ylim)
 
-    if kpoints:
+    if k_labels is not None and k_ticks is not None:
+        ax.set_xticks(list(k_ticks))
+        ax.set_xticklabels(list(k_labels))
+        for t in k_ticks:
+            ax.axvline(t, color="gray", lw=0.5, alpha=0.5)
+    elif kpoints:
         positions = [p for _, p in kpoints]
         labels = [l for l, _ in kpoints]
         for p in positions:

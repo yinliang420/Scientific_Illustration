@@ -70,6 +70,7 @@ def plot_raman(
     ax.set_xlabel("Raman shift (cm⁻¹)")
     ax.set_ylabel("Intensity (a.u.)")
     ax.set_yticks([])
+    ax.margins(y=0.08)
 
     if xlim is not None:
         ax.set_xlim(*xlim)

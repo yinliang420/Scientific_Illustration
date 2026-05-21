@@ -35,10 +35,10 @@ def make_subplots(
                 label_style.format(letter=letter),
                 xy=(0, 1),
                 xycoords="axes fraction",
-                xytext=(2, -2),
+                xytext=(-2, 6),
                 textcoords="offset points",
-                ha="left",
-                va="top",
+                ha="right",
+                va="bottom",
                 fontweight="bold",
             )
 
