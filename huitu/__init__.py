@@ -23,12 +23,14 @@ from huitu.characterization.pl import plot_pl
 from huitu.characterization.thermal import plot_thermal
 from huitu.characterization.rietveld import plot_rietveld
 from huitu.characterization.operando import plot_operando
+from huitu.characterization.bet import plot_bet
 from huitu.electrochem.cv import plot_cv
 from huitu.electrochem.gcd import plot_gcd
 from huitu.electrochem.cycle import plot_cycle
 from huitu.electrochem.eis import plot_eis
 from huitu.electrochem.bode import plot_bode
 from huitu.electrochem.tafel import plot_tafel
+from huitu.electrochem.dqdv import plot_dqdv
 from huitu.computational.band import plot_band
 from huitu.computational.dos import plot_dos
 from huitu.computational.cohp import plot_cohp
@@ -46,6 +48,7 @@ from huitu.general.shap_like import plot_shap
 from huitu.layout.subplots import make_subplots
 from huitu.layout.inset import add_inset
 from huitu.layout.shared_axes import share_axes
+from huitu.layout.pdf_report import make_pdf_report
 
 # Nature-style figure archetypes + pre-submission review helpers.
 from huitu import archetype  # noqa: F401
@@ -118,12 +121,14 @@ __all__ = [
     "plot_thermal",
     "plot_rietveld",
     "plot_operando",
+    "plot_bet",
     "plot_cv",
     "plot_gcd",
     "plot_cycle",
     "plot_eis",
     "plot_bode",
     "plot_tafel",
+    "plot_dqdv",
     "plot_band",
     "plot_dos",
     "plot_cohp",
@@ -142,6 +147,7 @@ __all__ = [
     "make_subplots",
     "add_inset",
     "share_axes",
+    "make_pdf_report",
     "panel_tag",
     "supertitle",
     # Nature-style archetypes + review helpers
