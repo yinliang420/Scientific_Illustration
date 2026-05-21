@@ -127,7 +127,15 @@ def plot_shap(
         importance = np.abs(sv).mean(axis=0)
         order = np.argsort(importance)[::-1][:max_features]
         order = order[::-1]  # top of plot = most important
+        n_rows = len(order)
+        # Global |shap| max so the fallback colorbar reflects every row,
+        # not whichever scatter was drawn last.
+        _abs_sv = np.abs(sv[:, order])
+        _GLOBAL_ABS_VMAX = float(_abs_sv.max()) if _abs_sv.size else 1.0
+        if _GLOBAL_ABS_VMAX <= 0:
+            _GLOBAL_ABS_VMAX = 1.0
         rng = np.random.default_rng(0)
+        sc = None
         for row_idx, feat_idx in enumerate(order):
             xs = sv[:, feat_idx]
             jitter = rng.uniform(-0.32, 0.32, size=xs.size)
@@ -143,33 +151,36 @@ def plot_shap(
                 else:
                     c = np.zeros_like(raw)
                 c = np.clip(c, -2.5, 2.5)
-                ax.scatter(
+                sc = ax.scatter(
                     xs, ys, c=c, cmap=cmap_obj, s=10, alpha=0.8,
                     linewidths=0, vmin=-2.5, vmax=2.5,
                 )
             else:
-                ax.scatter(xs, ys, color=PALETTES["nature-cat"][0],
-                           s=10, alpha=0.6, linewidths=0)
+                # Fallback: color by |shap| so the colorbar still conveys a
+                # low->high gradient even without raw feature values.
+                # Use a single global vmax so the colorbar reflects every row,
+                # not just the last drawn scatter.
+                c = np.abs(xs)
+                sc = ax.scatter(
+                    xs, ys, c=c, cmap=cmap_obj, s=10, alpha=0.8,
+                    linewidths=0, vmin=0.0, vmax=_GLOBAL_ABS_VMAX,
+                )
         ax.axvline(0, color="#888888", linewidth=0.6, zorder=0)
-        ax.set_yticks(np.arange(len(order)))
+        ax.set_yticks(range(n_rows))
         ax.set_yticklabels([feature_names[i] for i in order])
+        ax.set_ylim(-0.5, n_rows - 0.5)
         ax.set_xlabel("SHAP value")
         ax.xaxis.grid(True, linestyle="-", linewidth=0.3, alpha=0.35, color="#CCCCCC")
         ax.set_axisbelow(True)
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
         ax.tick_params(top=False, right=False, which="both")
-        if fv is not None:
-            import matplotlib as mpl
-
-            sm = mpl.cm.ScalarMappable(
-                cmap=cmap_obj, norm=mpl.colors.Normalize(vmin=-2.5, vmax=2.5)
-            )
-            sm.set_array([])
+        if sc is not None:
             import matplotlib as _mpl_mod
             _lbl_sz = _mpl_mod.rcParams.get("axes.labelsize", 8)
-            cbar = fig.colorbar(sm, ax=ax, pad=0.02, shrink=0.85, aspect=25)
-            cbar.set_label("feature value (z-score)", fontsize=_lbl_sz)
+            cbar = fig.colorbar(sc, ax=ax, pad=0.02, shrink=0.85, aspect=25)
+            cbar.set_label("Feature value (low → high)", fontsize=_lbl_sz)
+            cbar.set_ticks([])
             cbar.outline.set_linewidth(0.5)
             cbar.ax.tick_params(width=0.5, length=2, labelsize=max(_lbl_sz - 1, 6))
 

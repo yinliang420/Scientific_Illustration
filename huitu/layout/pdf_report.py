@@ -38,27 +38,36 @@ def _render_cover(
     fig = plt.figure(figsize=(8.27, 11.69))   # A4 portrait
     fig.patch.set_facecolor("white")
 
-    # Big title.
-    fig.text(0.5, 0.78, title, ha="center", va="center",
+    # When metadata is empty, centre title + footer vertically with consistent
+    # spacing; otherwise keep the title/metadata/footer hierarchy.
+    if metadata_lines:
+        title_y, subtitle_y, meta_y, footer_y = 0.78, 0.72, 0.45, 0.06
+    else:
+        title_y, subtitle_y, meta_y, footer_y = 0.58, 0.52, None, 0.40
+
+    fig.text(0.5, title_y, title, ha="center", va="center",
              fontsize=22, fontweight="bold", color=role("hero"))
     if subtitle:
-        fig.text(0.5, 0.72, subtitle, ha="center", va="center",
+        fig.text(0.5, subtitle_y, subtitle, ha="center", va="center",
                  fontsize=12, color=role("neutral_dark"))
 
     # Metadata block (one line each, left-aligned in a centred column).
-    if metadata_lines:
+    if metadata_lines and meta_y is not None:
         block = "\n".join(metadata_lines)
-        fig.text(0.5, 0.45, block, ha="center", va="center",
+        fig.text(0.5, meta_y, block, ha="center", va="center",
                  fontsize=10, color=role("neutral_dark"),
                  family="monospace")
 
     # Footer.
-    fig.text(0.5, 0.06,
+    fig.text(0.5, footer_y,
              "Generated with huitu — journal-ready figures for materials science",
              ha="center", va="center", fontsize=8,
              color=role("neutral"))
 
-    pdf.savefig(fig, bbox_inches="tight")
+    # Cover page is full-bleed A4: do NOT crop with bbox_inches="tight",
+    # otherwise empty whitespace gets stripped and the page looks malformed
+    # when no metadata is supplied.
+    pdf.savefig(fig)
     plt.close(fig)
 
 

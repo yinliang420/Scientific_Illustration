@@ -88,6 +88,7 @@ def plot_rietveld(
         ax_main.vlines(hkl, tick_y - tick_h, tick_y, color="black", lw=0.6,
                        label=bragg_label or None)
 
+    ax_main.margins(y=0.05)
     ax_main.legend(loc="best")
 
     diff = iobs - icalc
