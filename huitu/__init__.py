@@ -77,6 +77,12 @@ from huitu.pro import (
     plot_operando_contour,
 )
 
+# Freeze PALETTES at this point — after huitu.pro has registered its premium
+# palettes — so user code can't mutate the registry in place. Must come AFTER
+# ``from huitu import pro`` (which calls ``register_pro_palettes()``).
+from types import MappingProxyType
+PALETTES = MappingProxyType(PALETTES)
+
 try:
     __version__ = version("huitu")
 except PackageNotFoundError:

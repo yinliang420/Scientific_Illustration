@@ -39,6 +39,29 @@ in scope, just hardened.
   fallback stack. Never installed on macOS or vanilla Windows; matplotlib
   still falls through to `DejaVu Sans`. Eliminates ~24 `findfont` warnings
   per draw.
+- **`huitu.review.PanelIssue.__str__`** — `"/".join(self.panels)` crashed
+  with `TypeError` when a panel's `id` field was a non-string (int, tuple,
+  None, etc.). All four sites in `check_redundancy` that pull `p["id"]`
+  into the issue tuple now coerce via `str(...)`, so `PanelIssue` is safe
+  to format regardless of what the caller stuffs into `id`.
+- **`huitu.review.check_redundancy`** — added a duplicate-id rule: two
+  panels sharing the same letter (e.g. both `"a"`) now raise a `warn`-level
+  `PanelIssue`, since every Nature panel needs a unique label. Also now
+  accepts generators / non-sized iterables — the body materialises the
+  input into a list on entry so `len(panels)` and the multi-pass loops
+  work uniformly.
+- **`huitu.style.SEMANTIC_PALETTE`** and **`huitu.PALETTES`** — both
+  registries are now wrapped in `types.MappingProxyType`, so accidental
+  in-place mutation (`huitu.SEMANTIC_PALETTE["hero"] = "#FFFFFF"`) raises
+  `TypeError` instead of silently corrupting every figure in the session.
+  `PALETTES` is frozen *after* `huitu.pro` registers its premium palettes,
+  so the full registry is still available — just immutable.
+
+### Future
+
+- Optional placeholder-string detection in `reviewer_checklist`
+  (`"todo"`, `"tbd"`, `"?"`) — needs a UX call before shipping because
+  `source_data="n/a"` is sometimes legitimate.
 
 ### Tests
 
@@ -47,6 +70,9 @@ in scope, just hardened.
   (`test_01_editable_text.py`, `..._semantic_palette`, `..._archetypes`,
   `..._redundancy`, `..._reviewer_checklist`) plus a `run_all.sh` driver.
   Used by the 3-agent iteration; output PNG/SVG dir is gitignored.
+- 5 adversarial test scripts in `real_data_test/test_v06_adversarial/`
+  hammering the same surface with edge-case inputs (non-string panel ids,
+  generators, duplicate ids, `MappingProxyType` mutation attempts, etc.).
 - Existing pytest suite still **82/82 passing**.
 
 ## [0.5.0] — 2026-05-06
