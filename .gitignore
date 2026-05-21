@@ -53,3 +53,6 @@ reports/
 # Local scratch
 SCRATCH*
 TODO_local*
+
+# Visual audit harness output (regenerable via tests/visual_audit/render_all.py)
+tests/visual_audit/output/

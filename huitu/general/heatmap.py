@@ -47,7 +47,9 @@ def plot_heatmap(
     cmap: str = "viridis",
     annot: bool = False,
     fmt: str = ".2g",
-    cbar_label: str = "",
+    cbar_label: str | None = None,
+    xlabel: str | None = None,
+    ylabel: str | None = None,
     center: float | None = None,
     **kwargs,
 ):
@@ -126,8 +128,13 @@ def plot_heatmap(
         ax.set_aspect("auto")
 
     cbar = fig.colorbar(im, ax=ax)
-    if cbar_label:
+    if cbar_label is not None:
         cbar.set_label(cbar_label)
+
+    if xlabel is not None:
+        ax.set_xlabel(xlabel)
+    if ylabel is not None:
+        ax.set_ylabel(ylabel)
 
     finalize(fig, save)
     return fig, ax

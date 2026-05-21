@@ -30,8 +30,8 @@ def plot_parallel(
     journal: str = "default",
     save=None,
     palette: str = "ggsci-nejm",
-    alpha: float = 0.55,
-    linewidth: float = 0.7,
+    alpha: float = 0.7,
+    linewidth: float = 1.0,
     normalize: bool = True,
     **kwargs,
 ):
@@ -123,14 +123,13 @@ def plot_parallel(
     ax.set_xticklabels(numeric_cols, rotation=rotation,
                         ha="right" if rotation else "center")
     if normalize:
-        ax.set_yticks([])
+        ax.set_yticks([0.0, 0.5, 1.0])
         ax.set_ylabel("normalized")
     ax.set_xlim(-0.3, n_cols - 1 + 0.3)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
-    ax.spines["left"].set_visible(not normalize)
-    ax.tick_params(which="both", top=False, right=False,
-                   left=not normalize)
+    ax.spines["left"].set_visible(True)
+    ax.tick_params(which="both", top=False, right=False, left=True)
     # Reserve bottom room for rotated labels so they don't clip.
     if rotation:
         fig.subplots_adjust(bottom=0.22)
@@ -357,18 +356,27 @@ def plot_connected_scatter(
             # Clear the biggest scatter point (sizes top out at 55) so the
             # "start" / "end" glyphs never sit on top of a marker.
             clear = marker_clearance_pts(55, pad_pts=2.0)
+            # Detect closed trajectory (start ≈ end) — collapse to a single
+            # combined label so two stacked annotations don't overlay.
+            p_start = (xs[0], ys[0])
+            p_end = (xs[-1], ys[-1])
+            xrange = float(np.nanmax(xs) - np.nanmin(xs)) or 1.0
+            yrange = float(np.nanmax(ys) - np.nanmin(ys)) or 1.0
+            closed = np.hypot(p_start[0] - p_end[0],
+                              p_start[1] - p_end[1]) < 0.02 * np.hypot(xrange, yrange)
             annos.append(ax.annotate(
-                "start", xy=(xs[0], ys[0]),
+                "start↔end" if closed else "start", xy=p_start,
                 xytext=(clear, clear), textcoords="offset points",
                 fontsize=7, color=col, weight="bold",
                 annotation_clip=False,
             ))
-            annos.append(ax.annotate(
-                "end", xy=(xs[-1], ys[-1]),
-                xytext=(clear, clear), textcoords="offset points",
-                fontsize=7, color=col, weight="bold",
-                annotation_clip=False,
-            ))
+            if not closed:
+                annos.append(ax.annotate(
+                    "end", xy=p_end,
+                    xytext=(clear, clear), textcoords="offset points",
+                    fontsize=7, color=col, weight="bold",
+                    annotation_clip=False,
+                ))
 
     if xlabel: ax.set_xlabel(xlabel)
     if ylabel: ax.set_ylabel(ylabel)

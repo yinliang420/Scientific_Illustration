@@ -2,6 +2,102 @@
 
 All notable changes to **huitu** are recorded here.
 
+## [0.6.2] — 2026-05-21
+
+Round-5 visual-audit release. A new 52-figure harness (one PNG per huitu
+plot helper) was reviewed by 8 strict subagents (one per category) and 7
+parallel fixer subagents applied minimal-diff fixes for the P0/P1 defects.
+A code-reviewer subagent then flagged 4 must-fix items in the combined
+diff, all resolved in this release. `pytest tests/` stays green at 237/237.
+
+### Fixed
+
+- **`plot_eis` Nyquist semicircle no longer squished** — `set_aspect("equal",
+  adjustable="box")` collapsed the box at wide figsizes. Now uses
+  `adjustable="datalim"` + `set_box_aspect(1.0)` so the semicircle reads
+  as a true circle.
+- **`plot_tafel` always draws a fit line + "NN mV/dec" legend** by default
+  (new `fit: bool = True` kwarg). Pass `fit=False` for marker-only. Closes
+  the regression where the auto-fit window silently filtered out every
+  point.
+- **`plot_shap` bee-swarm gets a colored gradient + colorbar** — points
+  colored by feature value (fallback `|shap|`) with a single global vmax;
+  feature rows centered on integer y-ticks with ±0.5 padding so top/bottom
+  rows don't clip.
+- **`share_axes` works on 1-D axes arrays** (e.g. `plt.subplots(1, 3)`).
+  Detects row vs column via `math.isclose(arr[0].get_position().y0,
+  arr[-1].get_position().y0)` and hides labelleft/labelbottom on the inner
+  cells. Was silently a no-op for the 1-D case.
+- **`make_subplots` panel letters no longer collide with the first y-tick**
+  — letter sits at `xytext=(-2, 6)` outside the axes top-left, above the
+  first y-tick label.
+- **`add_inset` connectors visible when inset abuts zoom region** — now
+  uses near-corner pairing (matplotlib `mark_inset` idiom) so connectors
+  don't cross the zoom rectangle. Caller should pass non-abutting `bounds`
+  for visible connector length.
+- **`make_pdf_report` cover page no longer malformed** under empty
+  metadata — dropped `bbox_inches="tight"` for the cover (A4 sheet
+  preserved); empty-metadata branch re-centers title to 0.58 + footer to
+  0.40 vertical fraction.
+- **`plot_pourbaix` species formulas render with proper sub/superscripts**
+  — `_format_species` now handles `Fe2O3`, `Fe(OH)3`, `Fe2+`, `NH4+`,
+  unicode subscripts/superscripts (`Fe₂O₃`, `Fe³⁺`). Legend gets an opaque
+  white frame so dashed water-stability lines no longer merge with region
+  labels.
+- **`plot_band` accepts k-path labels** — new `k_labels=["Γ","X","M","Γ"]`
+  + `k_ticks=[0.0, 0.25, 0.5, 0.75]` kwargs with faint vertical guides at
+  each high-symmetry tick.
+- **`plot_crystal_ase` vs `plot_crystal_vesta` now visibly differ** —
+  renderer banner ("rendered via ASE" / "rendered via VESTA fallback") +
+  atom-symbol Patch legend + 2 Å scale bar + closed decorative box. PNGs
+  no longer byte-identical.
+- **`plot_xrd` hkl labels** clear the dashed peak line via white-halo
+  bbox; `ax.margins(y=0.08)` prevents top-clipping.
+- **`plot_raman` and `plot_rietveld` peak headroom** — `ax.margins(y=...)`
+  prevents top clipping for both.
+- **`plot_connected_scatter` start↔end collision** — closed-trajectory
+  detection (`dist < 2 %` of axis diagonal) renders a single
+  "start↔end" label instead of two stacked annotations.
+- **`plot_parallel` defaults** — `linewidth=1.0` + `alpha=0.7` (was 0.7/
+  0.55) so polylines read at journal sizes; numeric y-ticks `[0, 0.5, 1]`
+  shown when `normalize=True`.
+- **`plot_operando_3d_surface`** ships default axis labels (`"2θ (°)"`,
+  `"time"`, `"Intensity"`), `figsize=(6.0, 4.5)`, lighter wireframe
+  (`linewidth=0.1`, `edgecolor="#BBBBBB"`).
+- **`plot_operando_waterfall`** gets `auto_stagger: bool = False` flag —
+  opt-in fraction-of-peak scaling. Default `stagger=0.08` (absolute units)
+  is back-compatible with pre-round-5 callers. `figsize=(6.5, 4.5)`.
+- **`plot_operando_xrd_echem`** — `width_ratios=(2.5, 1.0)`, figsize width
+  → 6.0, `MaxNLocator(3)` on the echem x-axis prevents tick collision.
+- **`archetype_asymmetric_hero`** GridSpec restructured — `a=[:2,:2]` is
+  the largest panel by area; `e=[:,3]` remains the tallest spanning
+  column.
+- **`archetype_clinical_triptych`** — figsize `(7.2, 6.8)` → `(7.2, 7.2)`
+  + `constrained_layout_pads(h_pad=0.08)` prevents bottom-row tick
+  clipping.
+- **`archetype_dark_image_plate`** — `constrained_layout_pads(w_pad=0.005,
+  h_pad=0.005, wspace=0.01, hspace=0.01)` shrinks the white gutters that
+  were dominating the composition.
+- **`plot_scatter`** gets an OLS 95% CI band around the fit line via
+  `fill_between(..., y_fit ± 1.96 × se)`.
+- **`plot_heatmap`** accepts `xlabel`, `ylabel`, `cbar_label` kwargs
+  (defaults `None` for back-compat).
+
+### Added
+
+- **`tests/visual_audit/`** — 52-figure harness (`render_all.py`) that
+  renders one PNG per huitu plot helper across 8 category subdirectories.
+  Output `tests/visual_audit/output/` is gitignored.
+- **`huitu/computational/pourbaix._format_species`** — public helper for
+  rendering "Fe2O3"/"Fe(OH)3"/"Fe2+" → mathtext.
+
+### Out of scope (deferred)
+
+- P2 cosmetic nits on `plot_bar`, `plot_line`, `plot_radar`, `plot_box_violin`
+  (no value labels, twin-axis, patch legend, violin half).
+- `set_constrained_layout_pads` deprecation warnings on
+  `archetype.py:226/288` — pending matplotlib hard-deprecation.
+
 ## [0.6.1] — 2026-05-21
 
 Polish release surfaced by a 4-agent (A/B/C/D) iteration on real-data showcase
