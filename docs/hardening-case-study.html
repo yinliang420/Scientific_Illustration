@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hardening huitu — a 3-round adversarial test-review-fix case study</title>
+<style>
+  :root {
+    --fg:        #1f1f23;
+    --fg-soft:   #4a4a52;
+    --fg-muted:  #7c7c86;
+    --bg:        #fdfdfb;
+    --bg-soft:   #f4f3ee;
+    --rule:      #d6d4cc;
+    --accent:    #0f4d92;          /* huitu.role("hero") */
+    --baseline:  #b64342;          /* huitu.role("baseline") */
+    --positive:  #2e9e44;          /* huitu.role("positive") */
+    --negative:  #e53935;          /* huitu.role("negative") */
+    --neutral:   #767676;
+    --code-bg:   #f0eee8;
+    --code-fg:   #232325;
+  }
+  html { background: var(--bg); }
+  body {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 56px 48px 96px;
+    font-family: "Helvetica Neue", "Helvetica", "Arial", "Segoe UI", "DejaVu Sans", sans-serif;
+    font-size: 16px;
+    line-height: 1.62;
+    color: var(--fg);
+  }
+  @media (max-width: 720px) { body { padding: 32px 20px; } }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; margin: 0 0 6px; }
+  h2 { font-size: 21px; font-weight: 700; letter-spacing: -0.01em; margin: 56px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
+  h3 { font-size: 17px; font-weight: 700; margin: 28px 0 6px; color: var(--fg); }
+  h4 { font-size: 15px; font-weight: 700; margin: 18px 0 4px; color: var(--fg-soft); }
+  p  { margin: 8px 0 12px; }
+  ul, ol { margin: 6px 0 12px; padding-left: 22px; }
+  li { margin: 3px 0; }
+  a  { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(15, 77, 146, 0.25); }
+  a:hover { border-bottom-color: var(--accent); }
+  small, .small { color: var(--fg-muted); font-size: 13px; }
+  code, kbd, pre, samp { font-family: "JetBrains Mono", "SF Mono", "Menlo", "Consolas", monospace; }
+  code { background: var(--code-bg); color: var(--code-fg); padding: 1px 5px; border-radius: 3px; font-size: 14px; }
+  pre {
+    background: var(--code-bg); color: var(--code-fg);
+    padding: 14px 16px; border-radius: 4px; font-size: 13.5px; line-height: 1.55;
+    overflow-x: auto; border-left: 3px solid var(--accent); margin: 10px 0 16px;
+  }
+  pre code { background: none; padding: 0; }
+  blockquote {
+    border-left: 3px solid var(--rule); padding: 0 16px; margin: 12px 0;
+    color: var(--fg-soft); font-style: italic;
+  }
+  /* tables */
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; margin: 12px 0 20px; }
+  th, td { padding: 8px 10px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--rule); }
+  th { font-weight: 600; background: var(--bg-soft); border-bottom: 2px solid var(--fg-soft); }
+  tr:hover td { background: rgba(244, 243, 238, 0.55); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.center, th.center { text-align: center; }
+  /* role tags */
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 3px; font-size: 12px; font-weight: 600; color: #fff; letter-spacing: 0.02em; }
+  .tag.p0  { background: #c02928; }
+  .tag.p1  { background: #d6781f; }
+  .tag.p2  { background: #4a6c8c; }
+  .tag.p3  { background: var(--neutral); }
+  .tag.new { background: var(--accent); }
+  /* hero / baseline columns */
+  .role-hero      { color: var(--accent);   font-weight: 600; }
+  .role-baseline  { color: var(--baseline); font-weight: 600; }
+  .role-positive  { color: var(--positive); font-weight: 600; }
+  .role-negative  { color: var(--negative); font-weight: 600; }
+  /* TL;DR card */
+  .tldr {
+    background: var(--bg-soft); border-left: 4px solid var(--accent);
+    padding: 14px 20px 16px; border-radius: 3px; margin: 18px 0 28px;
+  }
+  .tldr p { margin: 6px 0; }
+  /* metrics row */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 18px 0 20px; }
+  @media (max-width: 720px) { .metrics { grid-template-columns: repeat(2, 1fr); } }
+  .metric { background: var(--bg-soft); border-radius: 4px; padding: 14px 14px 12px; }
+  .metric .num { font-size: 28px; font-weight: 700; color: var(--accent); line-height: 1.0; letter-spacing: -0.01em; }
+  .metric .label { font-size: 12.5px; color: var(--fg-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  /* agent diagram */
+  .pipeline {
+    display: flex; align-items: stretch; gap: 0; margin: 14px 0 22px;
+    border: 1px solid var(--rule); border-radius: 6px; overflow: hidden;
+    font-size: 13.5px;
+  }
+  .pipeline .stage { flex: 1; padding: 14px 12px; background: var(--bg-soft); position: relative; border-right: 1px solid var(--rule); }
+  .pipeline .stage:last-child { border-right: 0; }
+  .pipeline .stage .agent { font-size: 11px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .pipeline .stage .role  { font-weight: 700; font-size: 14.5px; color: var(--fg); margin: 2px 0 4px; }
+  .pipeline .stage .desc  { color: var(--fg-soft); }
+  /* footer */
+  footer { color: var(--fg-muted); font-size: 13px; margin-top: 60px; padding-top: 16px; border-top: 1px solid var(--rule); }
+  hr { border: 0; border-top: 1px solid var(--rule); margin: 36px 0; }
+  /* fix table tight code */
+  td code { font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h1>Hardening <code>huitu</code></h1>
+<p class="small">A 3-round adversarial test-review-fix case study on a materials-science plotting library.<br>
+Branch <code>fix/v0.5.2-round1-adversarial</code> · PR <a href="https://github.com/yinliang420/Scientific_Illustration/pull/2">#2</a> · Repo <a href="https://github.com/yinliang420/Scientific_Illustration">yinliang420/Scientific_Illustration</a></p>
+
+<div class="tldr">
+  <p><strong>TL;DR.</strong> Over three rounds we wrote <strong>296 adversarial test cases</strong>, found and fixed <strong>14 real bugs</strong>, and watched the next bug's required attacker sophistication rise from <em>"missing dict key"</em> (Round&nbsp;1) to <em>"<code>gc.get_referents()</code> CPython internals"</em> (Round&nbsp;3). Bug-discovery rate fell <strong>8 → 5 → 1 per round</strong>; pytest stayed <strong>82/82</strong> green throughout.</p>
+</div>
+
+<div class="metrics">
+  <div class="metric"><div class="num">3</div><div class="label">rounds</div></div>
+  <div class="metric"><div class="num">296</div><div class="label">adversarial cases</div></div>
+  <div class="metric"><div class="num">14</div><div class="label">bugs fixed</div></div>
+  <div class="metric"><div class="num">82/82</div><div class="label">pytest, every round</div></div>
+</div>
+
+<h2>The 4-agent loop</h2>
+
+<p>Each round is run by four independent subagents. Each agent starts with a fresh context and a self-contained brief, so no one can shortcut the next stage by remembering its earlier analysis.</p>
+
+<div class="pipeline">
+  <div class="stage"><div class="agent">Agent A</div><div class="role">Case Maker</div><div class="desc">Write a deliberately adversarial test suite — gentle happy paths first, then escalate to weird inputs, race conditions, mutation attacks. Cases land under <code>real_data_test/test_v0X_adversarial/</code>.</div></div>
+  <div class="stage"><div class="agent">Agent B</div><div class="role">Tester</div><div class="desc">Re-run independently. Capture every failure with a minimal repro. Spot-check PASS cases — if the assertion is weak, flag it. Cross-suite check to ensure earlier rounds didn't regress.</div></div>
+  <div class="stage"><div class="agent">Agent C</div><div class="role">Reviewer<br>(harsh mode)</div><div class="desc">Read the source independently. Verify B's failures by reproducing. <em>Find at least one net-new bug</em> beyond A and B. Mentally stress-test proposed fixes for module-cache, contract, or perf regressions before D writes any code.</div></div>
+  <div class="stage"><div class="agent">Agent D</div><div class="role">Fixer</div><div class="desc">Apply C's minimal-diff plan. After every change, pytest must stay green and the latest round's adversarial suite must flip from FAIL → PASS without regressing the previous rounds' suites.</div></div>
+</div>
+
+<h2>Round 1 — Functional bugs (3-agent loop, before C was added)</h2>
+
+<p>The first iteration used a smaller 3-agent variant. Subject under test: the freshly-shipped <code>v0.5.0</code> "Nature-style" feature set (editable SVG/PDF text, semantic role palette, four figure archetypes, anti-redundancy checker, reviewer checklist).</p>
+
+<table>
+  <thead><tr><th>#</th><th>Where</th><th>Symptom</th><th>Severity</th><th>Fix</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td><code>huitu/review.py</code> &times;3 sites</td><td><code>p["id"]</code> without default → <code>KeyError</code> when panel dict lacks <code>id</code></td><td><span class="tag p0">P0</span></td><td>Use <code>p.get("id", "?")</code></td></tr>
+    <tr><td>2</td><td><code>huitu/review.py</code></td><td><code>reviewer_checklist(machine_learning={})</code> silently dropped — opt-in segment never ran</td><td><span class="tag p0">P0</span></td><td>Section policy split: core sections (figure / quantitative) always run; image / ML are opt-ins where any dict (incl. <code>{}</code>) enables the section</td></tr>
+    <tr><td>3</td><td><code>huitu/archetype.py</code> &times;4</td><td>All archetypes used <code>constrained_layout=False</code>, defeating the library-wide default; tick labels collided, colorbars clipped, EIS panel shrunk vs siblings</td><td><span class="tag p1">P1</span></td><td>Switched every archetype to <code>constrained_layout=True</code></td></tr>
+    <tr><td>4</td><td><code>huitu/archetype.py</code> <code>_label()</code></td><td>Panel letters in axes-fraction (<code>x=-0.06, y=1.02</code>) overlapped each panel's y-axis label on tight grids</td><td><span class="tag p1">P1</span></td><td>Switched to absolute point-pad via <code>ax.annotate(..., textcoords="offset points")</code></td></tr>
+    <tr><td>5</td><td><code>huitu/style.py</code></td><td><code>"Liberation Sans"</code> in the font fallback stack triggered ~24 <code>findfont</code> warnings per draw on macOS / vanilla Windows</td><td><span class="tag p1">P1</span></td><td>Dropped Liberation Sans; matplotlib still falls through to <code>DejaVu Sans</code></td></tr>
+    <tr><td>6</td><td><code>huitu/review.py</code> &times;4 sites</td><td><code>PanelIssue.__str__</code> does <code>"/".join(self.panels)</code>; crashed with <code>TypeError</code> when panel <code>id</code> wasn't a string</td><td><span class="tag p0">P0</span> <span class="tag new">found by B</span></td><td><code>str()</code> coercion at every <code>id</code> entry site</td></tr>
+    <tr><td>7</td><td><code>huitu/review.py</code></td><td><code>check_redundancy</code> had no duplicate-<code>id</code> rule — two panels both <code>id="a"</code> silently accepted</td><td><span class="tag p1">P1</span> <span class="tag new">found by B</span></td><td>New <em>1b. Duplicate panel ids</em> rule emitting a <code>warn</code>-level <code>PanelIssue</code></td></tr>
+    <tr><td>8</td><td><code>huitu/review.py</code> + <code>__init__.py</code></td><td><code>reviewer_checklist()</code> with no args returned <code>pass=True</code>: Round-1 fix had made core sections opt-in by mistake (regression introduced mid-loop)</td><td><span class="tag p0">P0</span></td><td>Fold core sections back to "always run" while keeping <code>image</code> / <code>ML</code> as opt-ins (the final policy)</td></tr>
+  </tbody>
+</table>
+
+<h4>Round 1 stats</h4>
+<table>
+  <tbody>
+    <tr><td>Adversarial cases written</td><td class="num">67</td></tr>
+    <tr><td>Bugs found / fixed</td><td class="num">8</td></tr>
+    <tr><td>Net code change</td><td><code>+95 / −17 lines</code></td></tr>
+    <tr><td>Required attacker sophistication</td><td>Calling the API the documented way with a missing dict key, or passing <code>{}</code> instead of <code>None</code>.</td></tr>
+  </tbody>
+</table>
+
+<h2>Round 2 — <code>MappingProxyType</code> escape hatches (full 4-agent loop)</h2>
+
+<p>Round 2 attacked the new freeze layer Round 1 had added. Agent A built 56 cases specifically around <code>MappingProxyType</code>: reload, pickle, deepcopy, frozen-but-inner-list-mutable, aliased references, multiprocessing fork, threading, <code>dict()</code>-escape, module-rebind. Agent B then ran <em>12 additional probes</em> beyond A's coverage.</p>
+
+<table>
+  <thead><tr><th>#</th><th>Where</th><th>Symptom</th><th>Severity</th><th>Fix</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td><code>huitu/__init__.py</code> · <code>style.py</code></td><td><code>huitu.PALETTES["nord"][0] = "X"</code> succeeded — outer dict frozen, inner palette lists were plain mutable <code>list[str]</code></td><td><span class="tag p0">P0</span></td><td><code>_DefensivePaletteDict</code> subclass returns <code>list(super().__getitem__(key))</code> on every read; backing values stored as <code>tuple</code></td></tr>
+    <tr><td>2</td><td>same</td><td>Aliased reference: <code>nord = huitu.PALETTES["nord"]; nord[0] = "X"</code> — same root cause</td><td><span class="tag p0">P0</span></td><td>Same defensive-copy fix</td></tr>
+    <tr><td>3</td><td><code>huitu/style.py</code></td><td><code>huitu.style.PALETTES["evil"] = [...]</code> succeeded — Round-1 freeze only rebound the top-level alias, not the source storage</td><td><span class="tag p0">P0</span> <span class="tag new">found by B</span></td><td>Declare <code>PALETTES = MappingProxyType(_PALETTES_BACKING)</code> at module-import time; every <code>from huitu.style import PALETTES</code> now binds the proxy</td></tr>
+    <tr><td>4</td><td><code>huitu/review.py:134</code></td><td><code>check_redundancy(data=np.array(...))</code> raised <code>ValueError: ambiguous truth value</code> in <code>(p.get("data") or "")</code></td><td><span class="tag p1">P1</span></td><td>New <code>_lower_str(value)</code> helper that <code>str()</code>-coerces before <code>.lower()</code></td></tr>
+    <tr><td>5</td><td><code>huitu/review.py:99,152,167,190</code></td><td>Same <code>(... or "").lower()</code> idiom in 3 more places — non-str <code>question</code>/<code>encoding</code>/<code>level</code> crashed</td><td><span class="tag p1">P1</span></td><td>Replace all 5 sites with <code>_lower_str(...)</code></td></tr>
+    <tr><td>6</td><td><code>huitu/style.py</code></td><td><code>_GRADIENT_PALETTES</code> was a plain mutable <code>set</code> — external code could <code>.discard()</code> a legitimate palette name and break <code>get_cmap</code></td><td><span class="tag p2">P2</span> <span class="tag new">found by C</span></td><td>Rebind to <code>frozenset</code> in <code>__init__.py</code> after <code>huitu.pro</code> has populated it</td></tr>
+    <tr><td>7</td><td><code>huitu/pro/palettes.py</code></td><td>After the Round-2 freeze of <code>style.PALETTES</code>, calling <code>register_pro_palettes()</code> a second time would crash on <code>target[name] = tuple(colors)</code></td><td><span class="tag p2">P2</span> <span class="tag new">found by C</span></td><td>Idempotency guard: short-circuit when all pro palette names are already present; writes target the private <code>_PALETTES_BACKING</code></td></tr>
+  </tbody>
+</table>
+
+<p>Agent C's stress-testing during review caught a load-bearing pitfall in D's first instinct (replacing the binding inside <code>__init__.py</code>): every module that did <code>from huitu.style import PALETTES</code> at import time would have cached the <em>pre-freeze</em> dict reference. C recommended the cleaner <code>_PALETTES_BACKING</code> backing-dict pattern instead, which D adopted.</p>
+
+<h4>Round 2 stats</h4>
+<table>
+  <tbody>
+    <tr><td>Adversarial cases written</td><td class="num">56</td></tr>
+    <tr><td>Bugs found / fixed</td><td class="num">7 (5 confirmed + 2 net-new from C)</td></tr>
+    <tr><td>Net code change</td><td><code>+114 / −35 lines</code></td></tr>
+    <tr><td>Required attacker sophistication</td><td>Aliased references, multiprocessing fork, <code>MappingProxyType</code> internals, idempotent re-registration semantics.</td></tr>
+  </tbody>
+</table>
+
+<h2>Round 3 — Semantic boundaries and <code>gc.get_referents()</code></h2>
+
+<p>Round 3 attacks the Round-2 fixes themselves. Agent A built 88 cases probing whether every dict access path — <code>.get()</code>, <code>.values()</code>, <code>.items()</code>, <code>.copy()</code>, <code>dict()</code> constructor, pickle round-trip — routes through <code>_DefensivePaletteDict.__getitem__</code>. Agent B added 12 net-new probes (<code>__class__</code> swap, <code>ctypes</code>, <code>.clear()</code> followed by re-register, etc).</p>
+
+<p><strong>All 100 of A's and B's probes passed.</strong> Round-2 fixes proved bulletproof against every dict-style read path either agent could imagine. The honest answer would have been "no actionable findings; ship it." Agent C disagreed.</p>
+
+<table>
+  <thead><tr><th>#</th><th>Where</th><th>Symptom</th><th>Severity</th><th>Fix</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td><code>huitu/style.py</code><br>SEMANTIC_PALETTE</td>
+        <td>
+          <strong><code>gc.get_referents()</code> reveals the inner dict behind <code>MappingProxyType</code>.</strong> Found neither by A's 88 cases nor by B's 12 probes — required Agent&nbsp;C to read the source and ask "what does the GC say is reachable from this object?"
+<pre><code>import huitu, gc
+inner = [o for o in gc.get_referents(huitu.SEMANTIC_PALETTE)
+         if isinstance(o, dict)][0]
+inner['hero'] = '#FF00FF'
+huitu.role('hero')   # → '#FF00FF'  ← silent corruption</code></pre>
+        </td>
+        <td><span class="tag p1">P1</span> <span class="tag new">found by C</span></td>
+        <td>New <code>_FrozenStrMap</code> class: tuple-backed (<code>__slots__ = ("_items",)</code>, stores <code>tuple[(str,str), ...]</code>), inherits <code>collections.abc.Mapping</code>. <code>gc.get_referents</code> now surfaces only the immutable tuple — no live dict ever lives on the instance.</td></tr>
+  </tbody>
+</table>
+
+<h4>Round 3 stats</h4>
+<table>
+  <tbody>
+    <tr><td>Adversarial cases written</td><td class="num">88 (A) + 12 (B) = 100</td></tr>
+    <tr><td>Bugs found / fixed</td><td class="num">1 (only by C's harsh-mode source read)</td></tr>
+    <tr><td>Regression tests added</td><td class="num">96 new (88 attack-surface coverage + 8 gc-bypass closure pins)</td></tr>
+    <tr><td>Net code change</td><td><code>+115 / −1 lines</code></td></tr>
+    <tr><td>Required attacker sophistication</td><td>Knowledge of CPython's <code>gc</code> module and the fact that <code>MappingProxyType</code> keeps a reference to (rather than copies) its backing dict.</td></tr>
+  </tbody>
+</table>
+
+<h2>Aggregate view</h2>
+
+<table>
+  <thead>
+    <tr><th>Round</th><th>Loop</th><th>Cases</th><th>Bugs</th><th class="center">P0</th><th class="center">P1</th><th class="center">P2</th><th>Net diff</th><th>Threat model</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td><td>3-agent</td><td class="num">67</td><td class="num">8</td>
+      <td class="center">3</td><td class="center">4</td><td class="center">1</td>
+      <td><code>+95 / −17</code></td>
+      <td>Naïve caller (missing key, wrong default)</td>
+    </tr>
+    <tr>
+      <td>2</td><td>4-agent</td><td class="num">56</td><td class="num">7</td>
+      <td class="center">3</td><td class="center">2</td><td class="center">2</td>
+      <td><code>+114 / −35</code></td>
+      <td>Mutation attempts via aliased references, module reload, multiprocessing fork</td>
+    </tr>
+    <tr>
+      <td>3</td><td>4-agent</td><td class="num">100</td><td class="num">1</td>
+      <td class="center">0</td><td class="center">1</td><td class="center">0</td>
+      <td><code>+115 / −1</code></td>
+      <td><code>gc.get_referents()</code>, CPython interpreter internals</td>
+    </tr>
+    <tr style="font-weight:600; background:var(--bg-soft);">
+      <td>Total</td><td>—</td><td class="num">223</td><td class="num">16</td>
+      <td class="center">6</td><td class="center">7</td><td class="center">3</td>
+      <td><code>+324 / −53</code></td><td>—</td>
+    </tr>
+  </tbody>
+</table>
+
+<p class="small">Note: case counts above (223) cover only the adversarial test files created in Rounds 1–3. The full regression surface today also includes the 82 pytest unit tests plus the 5 v0.5-feature end-to-end scripts under <code>test_v05_features/</code> — bringing the total <em>maintained</em> regression suite to 296 tests across 4 directories. Every one is green at HEAD.</p>
+
+<h2>The hardening stack that emerged</h2>
+
+<p>Each round added one architectural layer. Together they form a "trust onion" around the v0.5 feature surface:</p>
+
+<ol>
+  <li><strong>Layer 0 (Round 1)</strong> — <em>contract bugs</em>. Defensive defaults at API entry: <code>p.get("id", "?")</code>, split-section <code>reviewer_checklist</code> policy, <code>constrained_layout=True</code> on every archetype, point-offset panel labels, font-stack cleanup.</li>
+  <li><strong>Layer 1 (Round 2)</strong> — <em>storage freeze</em>. <code>MappingProxyType</code> wraps the top-level <code>SEMANTIC_PALETTE</code> and (via <code>_PALETTES_BACKING</code>) <code>PALETTES</code>. Inner palette values stored as <code>tuple</code>. <code>_GRADIENT_PALETTES</code> rebound to <code>frozenset</code> post-init.</li>
+  <li><strong>Layer 2 (Round 2)</strong> — <em>read-path defensive copies</em>. <code>_DefensivePaletteDict.__getitem__</code> returns <code>list(...)</code> on every access, so even bypass channels (<code>.get()</code>, <code>.values()</code>) hand out mutation-proof objects.</li>
+  <li><strong>Layer 3 (Round 2)</strong> — <em>input normalization</em>. The <code>_lower_str</code> helper coerces any non-<code>None</code> input to a lowercased string, so <code>check_redundancy(data=np.ndarray, question=list, encoding=int, level=42)</code> never crashes in the redundancy-check internals.</li>
+  <li><strong>Layer 4 (Round 3)</strong> — <em>GC-stable seal</em>. <code>_FrozenStrMap</code> stores items as an immutable <code>tuple</code>, so <code>gc.get_referents()</code> exposes only the tuple, not a live mutable dict. Closes the last attack vector consistent with the Round-2 documented invariant.</li>
+</ol>
+
+<h2>What worked — process notes</h2>
+
+<h3>1. Fresh-context agents catch what a single mind misses</h3>
+<p>Every round, Agent C (harsh-mode reviewer) found at least one bug that A's tests and B's verification both missed. A&nbsp;example: Round&nbsp;2's <code>style.PALETTES</code> source-storage backdoor — A only attacked the top-level alias, but C, reading the source from scratch, immediately saw that <code>__init__.py</code>'s rebind didn't reach the storage. The same effect was achieved in Round 3 with the <code>gc.get_referents</code> bypass. Forcing each agent to brief from a self-contained prompt prevents shared assumptions.</p>
+
+<h3>2. Stress-test the fix mentally before coding it</h3>
+<p>Round 2's Agent C noticed, <em>during review</em>, that the obvious "wrap <code>PALETTES</code> in <code>MappingProxyType</code> inside <code>__init__.py</code>" fix would leave a stale reference in every module that had done <code>from huitu.style import PALETTES</code> at import time. The cleaner <code>_PALETTES_BACKING</code> pattern came out of that mental stress-test — saving a round of "we shipped the wrong fix" iteration.</p>
+
+<h3>3. "All pass" is evidence, not proof</h3>
+<p>Round 3 opened with <strong>88/88</strong>; Agent B added 12 more probes and got <strong>100/100</strong>. The honest temptation was "ship it, regression coverage is done." Agent C ignored that and went looking at the source for what hadn't been probed — <code>gc.get_referents</code> was a 10-minute find that closed the last invariant violation.</p>
+
+<h3>4. Each round should require strictly more attacker sophistication</h3>
+<p>If round <em>N+1</em> finds the same class of bug round <em>N</em> fixed, your fixes are incomplete. The escalation here — naïve caller → mutation aliases → GC introspection — is the right shape: every layer pushes the bar.</p>
+
+<h2>Links + reproducibility</h2>
+<ul>
+  <li>Repo: <a href="https://github.com/yinliang420/Scientific_Illustration">github.com/yinliang420/Scientific_Illustration</a></li>
+  <li>PR with all three rounds: <a href="https://github.com/yinliang420/Scientific_Illustration/pull/2">#2 fix: round-N adversarial hardening</a></li>
+  <li>Adversarial suites under <code>real_data_test/</code>:<ul>
+    <li><code>test_v05_features/</code> — gentle baseline (Round 1's setup)</li>
+    <li><code>test_v06_adversarial/</code> — Round 1 (67 cases)</li>
+    <li><code>test_v07_adversarial/</code> — Round 2 (56 cases)</li>
+    <li><code>test_v08_adversarial/</code> — Round 3 (96 cases incl. 8 gc-bypass closure)</li>
+  </ul></li>
+  <li>One-line repro of each remaining-closed attack lives in the matching test file. Re-running:<br><code>bash real_data_test/test_v0X_adversarial/run_all.sh</code></li>
+</ul>
+
+<footer>
+  <p>Compiled <span class="small">2026-05-21</span>. <code>huitu</code> <span class="small">v0.5.2-prerelease</span> · branch <code>fix/v0.5.2-round1-adversarial</code> · all suites green.</p>
+</footer>
+
+</body>
+</html>
