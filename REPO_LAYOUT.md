@@ -19,37 +19,25 @@ huitu_skills/                      ← repo root (= the GitHub repo)
 │   ├── pro/                       ← legacy alias namespace (v0.4 advanced + operando charts)
 │   └── readers/                   ← txt/csv input normalisation
 │
-├── tests/                         ← pytest unit tests (82, all green)
+├── tests/                         ← pytest unit tests (57, all green)
 │
-├── examples/                      ← THIN DEMOS (~10–30 lines each) showing how to call huitu
-│   ├── xrd_single.py              ← e.g. `from huitu import plot_xrd; plot_xrd(...)`
-│   ├── …                          ← one demo per plot family
-│   ├── output/                    ← demo PNG outputs (TRACKED — used as showcase images)
+├── examples/                      ← SIX CANONICAL DEMOS (slim — full per-function calling conventions live in each plot_*'s docstring)
+│   ├── quickstart.py              ← one-line plot_xrd with journal preset
+│   ├── multi_panel.py             ← archetype + role + plot_* combined
+│   ├── bet.py                     ← BET isotherm (v0.6)
+│   ├── dqdv.py                    ← differential capacity (v0.6)
+│   ├── pdf_report.py              ← multi-figure PDF report (v0.6)
+│   ├── reviewer_checklist.py      ← anti-redundancy + reviewer-checklist QA
+│   ├── output/                    ← generated demo outputs (gitignored — regenerable)
 │   └── sample_data/               ← synthetic two-column txt files for demos
 │
-├── real_data_test/                ← END-TO-END / ADVERSARIAL test suites (NOT pytest)
-│   ├── test_v05_features/         ← v0.5 features end-to-end
-│   ├── test_v06_adversarial/      ← Round 1: 67 functional bug cases
-│   ├── test_v07_adversarial/      ← Round 2: 56 MappingProxy attack cases
-│   ├── test_v08_adversarial/      ← Round 3: 96 boundary + gc-bypass cases
-│   ├── random_gallery/            ← 100-figure stress-test script (output gitignored)
-│   ├── test_pro_gallery.py        ← 322-scenario advanced gallery
-│   └── output_* (gitignored)      ← regenerable outputs, never tracked
+├── docs/showcase/                 ← README hero images (6 PNGs used in the Showcase grid)
 │
-├── docs/
-│   ├── hardening-case-study.html  ← 3-round 4-agent hardening engineering writeup
-│   ├── showcase/                  ← README hero images (bug-by-round + tests-by-round charts)
-│   └── inspirations/              ← Read-only mirror of Yuan1z0825/nature-skills (figures4papers + 5 sibling skills)
-│
-├── tools/                         ← maintenance scripts (NOT shipped in wheel)
-│   └── render_hardening_charts.py ← regenerates the case-study charts using huitu itself
-│
-├── README.md         ← project entry point (badges + quickstart + 📑 hardening case study link)
-├── SKILL.md          ← full plot catalogue with `Source` and `Demo` columns
-├── USAGE.md          ← Chinese-language hands-on guide
+├── README.md         ← project entry point (badges + quickstart + showcase grid)
+├── SKILL.md          ← full plot catalogue with `Source` column + inline quickstart snippets
 ├── CHANGELOG.md      ← version-by-version changes
 ├── LICENSE           ← MIT
-├── MANIFEST.in       ← controls what ships in the wheel (excludes examples/ + tests/ + real_data_test/)
+├── MANIFEST.in       ← controls what ships in the wheel (excludes examples/ + tests/)
 └── pyproject.toml    ← package metadata + dependencies
 ```
 
@@ -62,9 +50,8 @@ The repo is **lean by design**. Everything in the tree above is tracked. The
 |---|---|
 | `build/`, `dist/`, `*.egg-info/`, `.pytest_cache/` | Python build artefacts — regenerable |
 | `__pycache__/`, `*.pyc`, `.DS_Store` | Caches / OS noise |
-| `real_data_test/output*/`, `real_data_test/test_v*_*/output/` | Generated test outputs (~270 MB) |
+| `examples/output/` | Generated example outputs (regenerable) |
 | `xrd_real_patterns_*/` | Local raw experimental data |
-| `docs/inspirations/figures4papers/**/*.png` | Demo-renderer outputs (regenerable by running the upstream scripts) |
 | `reports/` | Per-turn private modification notes |
 | `.claude/`, `.cursor/`, `.vscode/`, `.idea/` | Editor / agent state |
 
@@ -85,11 +72,16 @@ to be guessed.
 1. **Write the function** in the appropriate subpackage:
    `huitu/<characterization|electrochem|computational|general|layout>/<name>.py`
 2. **Export from the top level** in `huitu/__init__.py` (both the import line and the `__all__` entry).
-3. **Add a demo** in `examples/<name>.py` (10–30 lines — just a call site).
-4. **Add a row** to the `Plot catalogue` table in [`SKILL.md`](SKILL.md) with
-   the function name, `Source` path, `Demo` path, and a one-line note.
-5. **Add a pytest** in `tests/test_smoke.py` (parameterised list) covering the
-   journal presets that matter.
-6. **Add a CHANGELOG entry** under the upcoming version.
+3. **Add a row** to the `Plot catalogue` table in [`SKILL.md`](SKILL.md) with
+   the function name, `Source` path, and a one-line note. If the function
+   warrants top-level visibility, add an entry to the "Inline quickstart
+   snippets" subsection of the same file.
+4. **Add a pytest** in `tests/test_smoke.py` covering the journal presets
+   that matter (use the parameterised `test_use_journal_all_presets` pattern).
+5. **Add a CHANGELOG entry** under the upcoming version.
+6. *(Optional)* If the function is one of the six canonical workflow
+   demonstrations, add an `examples/<name>.py` script — but the per-function
+   calling conventions live in the function's docstring (`help(plot_*)`),
+   not as a one-script-per-function fixture.
 
 Run `pytest tests/ -q` after each step.
