@@ -9,10 +9,23 @@ Note
 ``use_journal`` calls ``matplotlib.rcdefaults()`` before applying the preset,
 so any user-set rcParams for the current session are discarded. Re-apply your
 custom rcParams after calling ``use_journal`` if needed.
+
+Trust roots (Round 3)
+---------------------
+* ``_PALETTES_BACKING`` (a :class:`_DefensivePaletteDict`) is the *documented*
+  trust root for the ``PALETTES`` registry. It is intentionally writable so
+  that :func:`huitu.pro.register_pro_palettes` can extend it at import time.
+  Inner values are stored as ``tuple`` and ``__getitem__`` hands out fresh
+  ``list`` copies, so even direct mutation of the backing cannot poison a
+  subscript read through ``huitu.PALETTES``.
+* ``SEMANTIC_PALETTE`` is the public role -> hex view. It is sealed via a
+  tuple-backed :class:`_FrozenStrMap` so neither ``__setitem__`` nor
+  ``gc.get_referents(...)`` can surface a mutable inner dict.
 """
 
 from __future__ import annotations
 
+from collections.abc import Mapping as _AbcMapping
 from types import MappingProxyType
 from typing import Mapping
 
@@ -36,6 +49,99 @@ class _DefensivePaletteDict(dict):
 
     def __getitem__(self, key):
         return list(super().__getitem__(key))
+
+
+class _FrozenStrMap(_AbcMapping):
+    """Tuple-backed read-only str -> str map.
+
+    Round 3 found that ``MappingProxyType(some_dict)`` is not a complete
+    freeze: the wrapped dict is still reachable via ``gc.get_referents``,
+    where ``inner = [o for o in gc.get_referents(proxy) if isinstance(o, dict)]``
+    surfaces the mutable backing dict in one line. Anyone who can run that
+    snippet can corrupt ``role()`` lookups for the rest of the session.
+
+    This class closes that channel by storing the snapshot in a single
+    immutable ``tuple`` slot. ``gc.get_referents`` on a ``_FrozenStrMap``
+    instance returns only the tuple and the class object, never a writable
+    dict. ``__setitem__`` is not defined (raises ``TypeError`` like
+    ``mappingproxy``), and ``__reduce_ex__`` raises ``TypeError`` to match
+    ``MappingProxyType``'s "frozen at top level + cannot pickle" contract.
+
+    Subclasses :class:`collections.abc.Mapping` so user code that wants a
+    type-name-agnostic immutability check can write::
+
+        isinstance(huitu.SEMANTIC_PALETTE, collections.abc.Mapping)  # True
+
+    instead of pinning on the exact class name.
+    """
+
+    __slots__ = ("_items",)
+
+    def __init__(self, mapping):
+        # Snapshot into a sorted tuple — no live dict ever lives on the instance.
+        self._items = tuple(sorted(mapping.items()))
+
+    def __getitem__(self, key):
+        for k, v in self._items:
+            if k == key:
+                return v
+        raise KeyError(key)
+
+    def __contains__(self, key):
+        return any(k == key for k, _ in self._items)
+
+    def __iter__(self):
+        return (k for k, _ in self._items)
+
+    def __len__(self):
+        return len(self._items)
+
+    def keys(self):
+        return [k for k, _ in self._items]
+
+    def items(self):
+        return list(self._items)
+
+    def values(self):
+        return [v for _, v in self._items]
+
+    def get(self, key, default=None):
+        for k, v in self._items:
+            if k == key:
+                return v
+        return default
+
+    def copy(self):
+        return dict(self._items)
+
+    def __eq__(self, other):
+        if isinstance(other, _FrozenStrMap):
+            return self._items == other._items
+        if isinstance(other, dict):
+            return dict(self._items) == other
+        return NotImplemented
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is NotImplemented:
+            return result
+        return not result
+
+    def __hash__(self):
+        return hash(self._items)
+
+    def __repr__(self):
+        return f"_FrozenStrMap({dict(self._items)!r})"
+
+    def __reduce_ex__(self, protocol):  # noqa: D401 — pickle hook
+        # Match ``MappingProxyType``'s "frozen ≠ shippable backdoor" contract:
+        # refuse to pickle so users cannot accidentally ship a copy and call
+        # it frozen. ``dict(huitu.SEMANTIC_PALETTE)`` remains the documented
+        # escape hatch for serialization.
+        raise TypeError("cannot pickle '_FrozenStrMap' object")
+
+    def __reduce__(self):
+        raise TypeError("cannot pickle '_FrozenStrMap' object")
 
 # Widths in inches; journals typically specify mm. 1 inch = 25.4 mm.
 _MM = 1.0 / 25.4
@@ -125,7 +231,14 @@ _SEMANTIC = [
 # mapping in place (which would silently corrupt every figure in a session).
 # ``_SEMANTIC`` is a snapshot list of plain hex strings, so the freeze does
 # not affect the categorical cycle assembled above.
-SEMANTIC_PALETTE = MappingProxyType(SEMANTIC_PALETTE)
+#
+# Round 3: use a tuple-backed :class:`_FrozenStrMap` rather than
+# :class:`MappingProxyType`. The proxy form left the inner dict reachable via
+# ``gc.get_referents``, which a hostile/sloppy caller could mutate to corrupt
+# subsequent ``role()`` lookups. ``_FrozenStrMap`` stores items in an
+# immutable tuple slot, so ``gc.get_referents`` only surfaces the tuple — no
+# writable dict — and ``role()`` reads stay reproducible across the session.
+SEMANTIC_PALETTE = _FrozenStrMap(SEMANTIC_PALETTE)
 
 # Two-level freeze (preserves the ``type(PALETTES).__name__ == "mappingproxy"``
 # contract and the "cannot pickle the proxy" contract while sealing the inner
