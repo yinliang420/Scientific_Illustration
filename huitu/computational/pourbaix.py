@@ -39,14 +39,21 @@ def plot_pourbaix(
     alpha = kwargs.pop("alpha", 0.45)
     edge_color = kwargs.pop("edgecolor", "black")
 
-    _draw_regions(ax, data, alpha=alpha, edge_color=edge_color, lw=0.6)
+    # ``label_position="top"`` anchors centroid labels near the top of each
+    # polygon so the diagonally-descending water-stability lines (H2/H2O and
+    # O2/H2O) pass *below* the text rather than slicing through it.
+    _draw_regions(ax, data, alpha=alpha, edge_color=edge_color, lw=0.6,
+                  label_position="top")
 
     if water_stability:
         ph = np.linspace(ph_range[0], ph_range[1], 50)
+        # zorder=2 puts the dashed water-stability lines *under* region labels
+        # (which use zorder=4 + white halo) so the user's "H2/H2O line over the
+        # centroid text" complaint can't recur.
         ax.plot(ph, -NERNST_25C * ph, ls="--", color="grey", lw=0.7,
-                label=r"H$_2$/H$_2$O")
+                label=r"H$_2$/H$_2$O", zorder=2)
         ax.plot(ph, 1.229 - NERNST_25C * ph, ls="--", color="grey", lw=0.7,
-                label=r"O$_2$/H$_2$O")
+                label=r"O$_2$/H$_2$O", zorder=2)
         ax.legend(loc="best", fontsize=6)
 
     ax.set_xlim(*ph_range)
