@@ -241,13 +241,21 @@ def case_11_module_rebind() -> None:
         huitu.SEMANTIC_PALETTE = original_top
 
 
-# ── Case 12 — vars(huitu.style)["SEMANTIC_PALETTE"] still the proxy ───────
+# ── Case 12 — vars(huitu.style)["SEMANTIC_PALETTE"] still frozen ──────────
 
 def case_12_vars_style() -> None:
-    desc = "case_12 vars(huitu.style)['SEMANTIC_PALETTE'] is the same proxy (no writable backdoor)"
+    desc = ("case_12 vars(huitu.style)['SEMANTIC_PALETTE'] is the same frozen "
+            "mapping (no writable backdoor)")
     sp = vars(huitu.style)["SEMANTIC_PALETTE"]
-    if type(sp).__name__ != "mappingproxy":
-        _bad(desc, f"vars()-access type is {type(sp).__name__}, not mappingproxy")
+    # Round 3: SEMANTIC_PALETTE was hardened from ``MappingProxyType`` to a
+    # tuple-backed ``_FrozenStrMap`` (closing a ``gc.get_referents`` bypass).
+    # Either name is acceptable; what matters is that __setitem__ raises.
+    allowed = {"mappingproxy", "_FrozenStrMap"}
+    if type(sp).__name__ not in allowed:
+        _bad(
+            desc,
+            f"vars()-access type is {type(sp).__name__}, not one of {sorted(allowed)}",
+        )
         return
     try:
         sp["hero"] = "x"

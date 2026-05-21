@@ -50,19 +50,25 @@ def case_01_reload_style_role_works() -> None:
         _bad(desc, f"crashed: {type(exc).__name__}: {exc}")
 
 
-# ── Case 2 — reload huitu.style: new proxy is still a proxy ──────────────
+# ── Case 2 — reload huitu.style: new mapping is still frozen ─────────────
 
 def case_02_reload_style_proxy_type() -> None:
-    desc = "case_02 after reload(huitu.style) SEMANTIC_PALETTE is still mappingproxy"
+    desc = ("case_02 after reload(huitu.style) SEMANTIC_PALETTE is still a "
+            "frozen mapping (mappingproxy or _FrozenStrMap)")
+    # Round 3: SEMANTIC_PALETTE was hardened from ``MappingProxyType`` to a
+    # tuple-backed ``_FrozenStrMap``; either name is acceptable here, what
+    # matters is that the freeze re-applies on reload.
+    allowed = {"mappingproxy", "_FrozenStrMap"}
     try:
         importlib.reload(huitu.style)
         t = type(huitu.style.SEMANTIC_PALETTE).__name__
-        if t == "mappingproxy":
-            _ok(desc)
+        if t in allowed:
+            _ok(desc + f" — got {t!r}")
         else:
             _bad(
                 desc,
-                f"after reload type is {t!r} — freeze didn't re-apply on reload",
+                f"after reload type is {t!r}; expected one of {sorted(allowed)} — "
+                "freeze didn't re-apply on reload",
             )
     except Exception as exc:
         _bad(desc, f"crashed: {type(exc).__name__}: {exc}")

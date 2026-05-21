@@ -56,6 +56,27 @@ in scope, just hardened.
   `TypeError` instead of silently corrupting every figure in the session.
   `PALETTES` is frozen *after* `huitu.pro` registers its premium palettes,
   so the full registry is still available — just immutable.
+- **Tightened `SEMANTIC_PALETTE` freeze (Round 3 follow-up)** — backing
+  storage is now a tuple-stored `_FrozenStrMap` rather than a
+  `MappingProxyType(dict)`, closing a `gc.get_referents()` bypass channel
+  that allowed silent corruption of `role()` lookups. Previously, an
+  attacker could run `gc.get_referents(huitu.SEMANTIC_PALETTE)` to obtain
+  the wrapped dict and mutate it; the snapshot now lives in a single
+  immutable tuple slot, so `gc.get_referents` only surfaces the tuple and
+  the class object. `_PALETTES_BACKING` remains the documented trust root
+  for the `PALETTES` registry — it is intentionally writable so
+  `register_pro_palettes()` can extend it, and its `__getitem__` already
+  hands out defensive `list` copies.
+
+  **Breaking-name note:** `type(huitu.SEMANTIC_PALETTE).__name__` changed
+  from `'mappingproxy'` to `'_FrozenStrMap'`. The public contract
+  (immutable mapping with `__getitem__`, `__contains__`, `__iter__`,
+  `__len__`, `keys()`, `items()`, `values()`, `get()`, `copy()`) is
+  unchanged. If you depend on the exact type name, use
+  `isinstance(huitu.SEMANTIC_PALETTE, collections.abc.Mapping)` instead.
+  `dict(huitu.SEMANTIC_PALETTE)` remains the documented serialization
+  escape hatch and continues to round-trip through pickle / json /
+  deepcopy.
 
 ### Future
 
@@ -73,6 +94,14 @@ in scope, just hardened.
 - 5 adversarial test scripts in `real_data_test/test_v06_adversarial/`
   hammering the same surface with edge-case inputs (non-string panel ids,
   generators, duplicate ids, `MappingProxyType` mutation attempts, etc.).
+- 5 Round-2 adversarial scripts in `real_data_test/test_v07_adversarial/`
+  probing `MappingProxyType` escape hatches (subscript / `update` / `pop`,
+  `importlib.reload`, pickle / `copy.copy` / `deepcopy`, threading / fork,
+  and review-module corner-cases) — the type-name checks accept either
+  `'mappingproxy'` or `'_FrozenStrMap'` to track the Round-3 freeze upgrade.
+- 6 Round-3 adversarial scripts in `real_data_test/test_v08_adversarial/`
+  including a new `test_06_semantic_gc_bypass.py` that verifies the
+  `gc.get_referents` channel is closed.
 - Existing pytest suite still **82/82 passing**.
 
 ## [0.5.0] — 2026-05-06
