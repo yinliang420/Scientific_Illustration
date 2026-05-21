@@ -13,52 +13,24 @@ ROOT = Path(__file__).resolve().parent.parent
 EXAMPLES = ROOT / "examples"
 OUTPUT = EXAMPLES / "output"
 
+# Slim state (v0.6+): six canonical example scripts. End-user plotting paths
+# are exercised by `tests/test_smoke_unit.py` (parameterised over journal
+# presets) and the v05/v06/v07/v08 adversarial suites under `real_data_test/`.
 SCRIPTS = [
-    ("xrd_single.py", "xrd_single.png"),
-    ("xrd_stacked.py", "xrd_stacked.png"),
-    ("xps_fitting.py", "xps_fitting.png"),
-    ("raman.py", "raman.png"),
-    ("cv.py", "cv.png"),
-    ("gcd.py", "gcd.png"),
-    ("cycle.py", "cycle.png"),
-    ("eis.py", "eis.png"),
-    ("bar.py", "bar.png"),
-    ("scatter.py", "scatter.png"),
-    ("line.py", "line.png"),
-    ("subplots_demo.py", "subplots_demo.png"),
-    ("inset_demo.py", "inset_demo.png"),
-    # P1 batch
-    ("ftir.py", "ftir.png"),
-    ("uvvis.py", "uvvis.png"),
-    ("pl.py", "pl.png"),
-    ("thermal.py", "thermal.png"),
-    ("bode.py", "bode.png"),
-    ("tafel.py", "tafel.png"),
-    ("band.py", "band.png"),
-    ("dos.py", "dos.png"),
-    ("heatmap.py", "heatmap.png"),
-    ("box_violin.py", "box_violin.png"),
-    # P2 batch
-    ("rietveld.py", "rietveld.png"),
-    ("cohp.py", "cohp.png"),
-    ("pourbaix.py", "pourbaix.png"),
-    ("phase_diagram.py", "phase_diagram.png"),
-    ("radar.py", "radar.png"),
-    ("shared_axes_demo.py", "shared_axes_demo.png"),
-    ("crystal_ase.py", "crystal_ase.png"),
-    ("crystal_vesta.py", "crystal_vesta.png"),
-    # v0.6 batch — BET / dQ-dV / multi-page PDF report
-    ("bet.py", "bet.png"),
-    ("dqdv.py", "dqdv.png"),
-    ("pdf_report.py", "pdf_report.pdf"),
+    ("quickstart.py",          "quickstart.png"),
+    ("multi_panel.py",         "multi_panel.png"),
+    ("bet.py",                 "bet.png"),
+    ("dqdv.py",                "dqdv.png"),
+    ("pdf_report.py",          "pdf_report.pdf"),
+    ("reviewer_checklist.py",  None),   # text-only output; no figure asserted
 ]
 
 
 @pytest.mark.parametrize("script, png", SCRIPTS)
 def test_example_runs(script, png):
     script_path = EXAMPLES / script
-    out_png = OUTPUT / png
-    if out_png.exists():
+    out_png = OUTPUT / png if png else None
+    if out_png is not None and out_png.exists():
         out_png.unlink()
 
     env = dict(os.environ)
@@ -71,8 +43,9 @@ def test_example_runs(script, png):
         text=True,
     )
     assert result.returncode == 0, f"{script} failed:\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
-    assert out_png.exists(), f"{script} did not produce {out_png}"
-    assert out_png.stat().st_size > 0
+    if out_png is not None:
+        assert out_png.exists(), f"{script} did not produce {out_png}"
+        assert out_png.stat().st_size > 0
 
 
 def test_package_imports():

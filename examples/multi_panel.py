@@ -1,16 +1,14 @@
-"""End-to-end demo: ``archetype.schematic_led`` + materials-science plot_*.
+"""Multi-panel demo — `archetype.schematic_led` + role + plot_* combined.
 
-Reproduces the layout pattern of a Nature-style materials paper Fig 1
-(schematic-led composite). The hero panel carries a synthetic mechanism
-schematic; the support row carries real materials-characterization
-plots driven by ``examples/sample_data/``.
-
-This is the closest huitu has to a one-page "this is what we mean by
-*figure archetype*" demo.
+The canonical "everything wired together" example: top hero panel carries a
+synthetic mechanism schematic with `role()`-coloured stages; the support row
+carries real materials data (XRD / CV / EIS) plus a `role()`-themed bar.
+Demonstrates all four v0.5 pillars at once — archetype layout, semantic
+palette, editable SVG output, and per-panel labels.
 
 Run from repo root::
 
-    python examples/nature_schematic_led_demo.py
+    python examples/multi_panel.py
 """
 
 from __future__ import annotations
@@ -97,10 +95,10 @@ def main() -> None:
     sup3.spines["top"].set_visible(False)
     sup3.spines["right"].set_visible(False)
 
-    fig.savefig(OUT / "nature_schematic_led_demo.png", bbox_inches="tight", dpi=300)
-    fig.savefig(OUT / "nature_schematic_led_demo.svg", bbox_inches="tight")
+    fig.savefig(OUT / "multi_panel.png", bbox_inches="tight", dpi=300)
+    fig.savefig(OUT / "multi_panel.svg", bbox_inches="tight")
     plt.close(fig)
-    print(f"wrote {OUT.relative_to(Path.cwd())}/nature_schematic_led_demo.{{png,svg}}")
+    print(f"wrote {OUT.relative_to(Path.cwd())}/multi_panel.{{png,svg}}")
 
 
 if __name__ == "__main__":
