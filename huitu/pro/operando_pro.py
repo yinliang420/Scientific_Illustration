@@ -177,10 +177,14 @@ def plot_operando_xrd_echem(
 
     from huitu.style import use_journal as _uj
     _uj(journal)
+    # Opt out of constrained_layout: the colorbar+subplots_adjust dance below
+    # is incompatible and matplotlib otherwise emits "incompatible with
+    # subplots_adjust" UserWarnings that bubble up to the polish tests.
     fig, axes = plt.subplots(
         1, 2, sharey=True,
         gridspec_kw={"width_ratios": list(width_ratios)},
         figsize=(4.8, 3.6),
+        constrained_layout=False,
     )
     ax_map, ax_ec = axes
 

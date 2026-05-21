@@ -69,7 +69,10 @@ def plot_parallel(
         _uj(journal)
         n_cols = len(numeric_cols)
         width = max(5.0, min(9.0, 1.0 * n_cols + 2.5))
-        fig, ax = plt.subplots(figsize=(width, width * 0.55))
+        # Opt out of constrained_layout: the bottom subplots_adjust used when
+        # tick labels are rotated is incompatible with constrained layout.
+        fig, ax = plt.subplots(figsize=(width, width * 0.55),
+                               constrained_layout=False)
     else:
         fig, ax = prepare_axes(ax, journal)
     n_rows, n_cols = mat.shape

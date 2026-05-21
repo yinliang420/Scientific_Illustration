@@ -2,6 +2,83 @@
 
 All notable changes to **huitu** are recorded here.
 
+## [0.6.1] — 2026-05-21
+
+Polish release surfaced by a 4-agent (A/B/C/D) iteration on real-data showcase
+figures. The user pointed at the Pourbaix showcase and called out four
+concerns; this release addresses all four with 93 new pytest regression cases.
+
+### Fixed
+
+- **Per-journal typography** — every preset now ships its own
+  `font.family` + `mathtext.fontset`. `science` and `ieee` switch to
+  Times Roman + STIX (matching their house styles); `default`, `nature`,
+  `acs`, `rsc`, `wiley`, `elsevier` stay on the Helvetica-stack +
+  `dejavusans` mathtext. Closes "默认都是各个期刊的字体默认" — until now
+  all 8 presets quietly resolved to Helvetica.
+- **Unified mathtext / body font** — even after pinning `mathtext.fontset`,
+  characters absent from the body font (e.g. `\circ` U+2218 not in
+  Helvetica) leaked into the SVG as a second `STIXGeneral` family. A
+  new savefig hook rewrites those fallback families at SVG write time
+  when `svg.fonttype="none"`, so the saved file has one consistent
+  font-family attribute throughout.
+- **`prepare_axes` no longer wipes user rcParams overrides** — previously
+  every `plot_*(ax=None)` call re-applied `use_journal("default")` via
+  `mpl.rcdefaults()`, silently clobbering any direct rcParams override.
+  New `_ACTIVE_PRESET` cache + explicit-vs-implicit kwarg discrimination
+  means `huitu.use_journal("nature"); mpl.rcParams["font.family"] = [...];
+  huitu.plot_xrd(...)` now preserves the override.
+- **Pourbaix water-stability dashed lines no longer pass through region
+  labels** — `_draw_regions` got a white halo bbox + `zorder=4` on the
+  centroid text, water-stability lines get `zorder=2`, and a new
+  `label_position="top"` option moves Pourbaix region labels 8 % below
+  polygon ymax so they clear the dashed line's window-extent.
+- **`plot_phase_diagram` invariant annotations** — same halo + zorder
+  applied so eutectic / peritectic markers don't sit on region labels.
+- **`plot_dqdv` legend** — was using `loc="best"` which lands legends on
+  tall peaks. Now routes through `place_legend(..., legend="auto",
+  pad_top=0.18)` so the y-axis gets 18 % headroom before the legend
+  draws.
+- **`plot_operando_xrd_echem` + `plot_parallel`** — both now create their
+  figure with `constrained_layout=False`, eliminating the
+  "incompatible with subplots_adjust" UserWarning.
+- **File-descriptor leak** in the SVG font-unify hook at
+  `huitu/style.py:92` — second `open(path, "rb").read()` was not closed.
+  Now wrapped in `with open(...) as fh:`.
+
+### Added
+
+- **`huitu.use_font(family, *, mathtext=None, size=None)`** — new top-level
+  helper for explicit font override. Accepts a string or list of family
+  names; sets `font.family` and (optionally) `mathtext.fontset` and
+  `font.size`. Survives subsequent `plot_*` calls thanks to the new
+  `_ACTIVE_PRESET` cache. Direct response to "能自己选字体这种吧".
+- **`label_position="top"` kwarg** on `huitu._common._draw_regions`
+  (used by `plot_pourbaix` / `plot_phase_diagram`) — pinning the centroid
+  label near the top of the polygon instead of the geometric center.
+- **`tests/polish/`** — 4 new test files (`test_01_font_consistency.py`,
+  `test_02_svg_editability.py`, `test_03_semantic_palette.py`,
+  `test_04_layout_precision.py`) plus a `conftest.py` and a `run_all.sh`
+  driver. 93 cases total; was 80/13 first pass, now **93/93 after fix**.
+  Real-data driven (uses `examples/sample_data/`) with synthetic data
+  only where unavoidable.
+
+### Changed
+
+- `pyproject.toml` 0.6.0 → 0.6.1.
+- `SKILL.md` preset table now lists each preset's font family
+  explicitly so the per-journal differentiation is discoverable
+  without reading the source.
+
+### Verification
+
+- `pytest tests/` 237/237 pass (was 144/144; the new polish suite
+  contributes 93 cases that all pass at HEAD).
+- All 6 canonical `examples/*.py` still run end-to-end.
+- `docs/showcase/render.py` regenerates all 9 HD figures cleanly.
+- Independent code-reviewer subagent verdict: ship (after the file-
+  descriptor leak fix in this same commit).
+
 ## [0.6.0] — 2026-05-21
 
 Minor release: four new functions long advertised in the roadmap, plus a
