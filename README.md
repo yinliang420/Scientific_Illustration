@@ -24,7 +24,7 @@
   `asymmetric_hero`，按论证类型而不是 `subplot(2,3)` 拼图。
 * **投稿 QA 工具** ✨ — `check_redundancy()` 检查多 panel 信息是否冗余，
   `reviewer_checklist()` 给出 reviewer 可能挑刺的字段清单。
-* **54 个调色板**（ggsci / Met-Brewer / Financial Times / Tol / Okabe-Ito /
+* **55 个调色板**（ggsci / Met-Brewer / Financial Times / Tol / Okabe-Ito /
   CARTO / Crameri / Nord / Editorial …），无需额外安装。
 
 ```python
@@ -290,7 +290,7 @@ cp -R docs/inspirations/skills/nature-reader         ~/.claude/skills/   # 中�
 ## 🎨 调色板
 
 ```python
-huitu.list_palettes()              # 54 个，按字母排序
+huitu.list_palettes()              # 55 个，按字母排序
 huitu.use_palette("met-hiroshige") # 全局应用
 cmap = huitu.get_cmap("crameri-batlow")
 ```

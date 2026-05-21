@@ -13,6 +13,8 @@ custom rcParams after calling ``use_journal`` if needed.
 
 from __future__ import annotations
 
+from types import MappingProxyType
+
 from cycler import cycler
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -100,6 +102,12 @@ _SEMANTIC = [
     SEMANTIC_PALETTE["neutral"],       # 5th = neutral reference
     SEMANTIC_PALETTE["accent_gold"],   # 6th = highlight callout
 ]
+
+# Freeze SEMANTIC_PALETTE so downstream code can't mutate the role → hex
+# mapping in place (which would silently corrupt every figure in a session).
+# ``_SEMANTIC`` is a snapshot list of plain hex strings, so the freeze does
+# not affect the categorical cycle assembled above.
+SEMANTIC_PALETTE = MappingProxyType(SEMANTIC_PALETTE)
 
 PALETTES: dict[str, list[str]] = {
     "tol-bright": _TOL_BRIGHT,
