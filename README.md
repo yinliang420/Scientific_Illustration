@@ -49,13 +49,21 @@ huitu.plot_xrd("xrd.txt", ax=ax["supports"][0])
 
 ## 🖼 Showcase
 
-| Palettes | Bump (rank evolution) | Operando waterfall |
-|---|---|---|
-| ![palettes](docs/showcase/001_pro_palette_catalog.png) | ![bump](docs/showcase/089_bump_paper_counts_by_technique.png) | ![waterfall](docs/showcase/168_op_waterfall_XRD_charge.png) |
+9 representative figures across huitu's full surface — every one rendered by `python docs/showcase/render.py` at ≥ 1900 px native, 300 dpi, editable-text SVG / PDF available.
 
-| Operando XRD + electrochem | Operando diffmap | Operando contour |
+| Multi-panel Nature Fig 1 | Rietveld refinement | Operando XRD + galvanostatic |
 |---|---|---|
-| ![xrdec](docs/showcase/188_op_xrdec_XRD_galvanostatic_cycle_1.png) | ![diffmap](docs/showcase/202_op_diff_XRD_d-intensity_vs_pristi.png) | ![contour](docs/showcase/218_op_contour_XRD_contour_filled.png) |
+| ![archetype](docs/showcase/01_archetype_schematic_led.png) | ![rietveld](docs/showcase/02_rietveld_refinement.png) | ![operando](docs/showcase/03_operando_xrd_echem.png) |
+
+| BET isotherm + linear (v0.6) | dQ/dV multi-cycle (v0.6) | Bump — rank evolution |
+|---|---|---|
+| ![bet](docs/showcase/04_bet_isotherm.png) | ![dqdv](docs/showcase/05_dqdv_multi_cycle.png) | ![bump](docs/showcase/06_bump_publications.png) |
+
+| Ridgeline distributions | Pourbaix (E-pH) diagram | Palette catalog |
+|---|---|---|
+| ![ridgeline](docs/showcase/07_ridgeline_distributions.png) | ![pourbaix](docs/showcase/08_pourbaix_diagram.png) | ![palettes](docs/showcase/09_palette_catalog.png) |
+
+> All 9 regenerable with one command: `python docs/showcase/render.py` — no manual data files needed.
 
 ---
 
