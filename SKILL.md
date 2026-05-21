@@ -201,18 +201,18 @@ The runnable versions of these six snippets live as `examples/quickstart.py`,
 
 Apply with `journal="..."` (or directly: `huitu.use_journal(name)`).
 
-| Preset     | scienceplots stack         | Figure size (inches) | Base font | Axes width |
-| ---------- | -------------------------- | -------------------- | --------- | ---------- |
-| `default`  | (none)                     | 3.5 x 2.8            | 8 pt      | 0.8        |
-| `nature`   | `science, nature`          | 89 mm x 70 mm        | 7 pt      | 0.6        |
-| `science`  | `science`                  | ~110 mm x 88 mm      | 7 pt      | 0.7        |
-| `acs`      | `science, notebook`        | 3.33 x 2.5           | 8 pt      | 0.8        |
-| `rsc`      | `science`                  | 3.26 x 2.6           | 8 pt      | 0.7        |
-| `wiley`    | `science`                  | 3.35 x 2.6           | 8 pt      | 0.8        |
-| `elsevier` | `science`                  | 90 mm x 70 mm        | 8 pt      | 0.8        |
-| `ieee`     | `science, ieee`            | 3.5 x 2.5            | 8 pt      | 0.8        |
+| Preset     | scienceplots stack         | Figure size (inches) | Base font | Axes width | Font family                          | Mathtext     |
+| ---------- | -------------------------- | -------------------- | --------- | ---------- | ------------------------------------ | ------------ |
+| `default`  | (none)                     | 3.5 x 2.8            | 8 pt      | 0.8        | Helvetica -> Arial -> DejaVu Sans    | `dejavusans` |
+| `nature`   | `science, nature`          | 89 mm x 70 mm        | 7 pt      | 0.6        | Helvetica -> Arial -> DejaVu Sans    | `dejavusans` |
+| `science`  | `science`                  | ~110 mm x 88 mm      | 7 pt      | 0.7        | Times New Roman -> serif fallback    | `stix`       |
+| `acs`      | `science, notebook`        | 3.33 x 2.5           | 8 pt      | 0.8        | Helvetica -> Arial -> DejaVu Sans    | `dejavusans` |
+| `rsc`      | `science`                  | 3.26 x 2.6           | 8 pt      | 0.7        | Helvetica -> Arial -> DejaVu Sans    | `dejavusans` |
+| `wiley`    | `science`                  | 3.35 x 2.6           | 8 pt      | 0.8        | Helvetica -> Arial -> DejaVu Sans    | `dejavusans` |
+| `elsevier` | `science`                  | 90 mm x 70 mm        | 8 pt      | 0.8        | Helvetica -> Arial -> DejaVu Sans    | `dejavusans` |
+| `ieee`     | `science, ieee`            | 3.5 x 2.5            | 8 pt      | 0.8        | Times New Roman -> serif fallback    | `stix`       |
 
-Shared across every preset: Helvetica -> Arial -> DejaVu Sans font stack, **600 dpi savefig** (journal grade), **`svg.fonttype="none"` + `pdf.fonttype=42`** so saved SVG/PDF text stays editable in Illustrator/Inkscape, black axes, ticks on all four sides, legend frame off, `text.usetex=False` so no LaTeX install required. If `scienceplots` cannot be imported, the preset falls back to plain matplotlib rcParams with the same sizes.
+Shared across every preset: **600 dpi savefig** (journal grade), **`svg.fonttype="none"` + `pdf.fonttype=42`** so saved SVG/PDF text stays editable in Illustrator/Inkscape, black axes, ticks on all four sides, legend frame off, `text.usetex=False` so no LaTeX install required. Body text + mathtext share a sans-serif stack for Nature/ACS/RSC/Wiley/Elsevier and a serif stack for Science/IEEE, so a label like `r"2$\theta$"` renders in one family rather than mixing Helvetica and DejaVuSerif. To override per session use `huitu.use_font("Times New Roman", mathtext="stix")` after `huitu.use_journal(...)`. If `scienceplots` cannot be imported, the preset falls back to plain matplotlib rcParams with the same sizes.
 
 ## Nature-style helpers (v0.5)
 

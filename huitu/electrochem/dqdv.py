@@ -31,7 +31,7 @@ from typing import Iterable
 import numpy as np
 import pandas as pd
 
-from huitu._common import finalize, prepare_axes
+from huitu._common import finalize, place_legend, prepare_axes
 from huitu.style import role
 
 
@@ -174,18 +174,24 @@ def plot_dqdv(
         role("accent_teal"), role("accent_violet"), role("neutral_dark"),
     ]
 
+    traces: list[tuple[np.ndarray, np.ndarray, str]] = []
     for i, (v, q) in enumerate(cycles):
         v_mid, dqdv = _compute_dqdv(v, q, smooth, window, polyorder)
         color = role_cycle[i % len(role_cycle)]
         label = label_iter[i] if i < len(label_iter) else None
         ax.plot(v_mid, dqdv, color=color, lw=1.1, label=label, **kwargs)
+        traces.append((v_mid, dqdv, color))
 
     if show_zero:
         ax.axhline(0, color=role("neutral"), lw=0.5, ls="--", alpha=0.7)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     if label_iter:
-        ax.legend(loc="best", frameon=False, fontsize=7)
+        # Route through place_legend so the dQ/dV legend never sits on top of
+        # the tallest peak — same automatic inline / pad-top behaviour as the
+        # rest of huitu.
+        place_legend(ax, label_iter, traces=traces, legend="auto",
+                     pad_top=0.18)
 
     finalize(fig, save)
     return fig, ax

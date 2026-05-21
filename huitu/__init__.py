@@ -9,6 +9,7 @@ from huitu.style import (
     list_palettes,
     register_cjk,
     role,
+    use_font,
     use_journal,
     use_palette,
 )
@@ -104,6 +105,7 @@ except PackageNotFoundError:
 
 __all__ = [
     "use_journal",
+    "use_font",
     "use_palette",
     "list_palettes",
     "register_cjk",
