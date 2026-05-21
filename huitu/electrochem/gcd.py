@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from typing import Iterable
 
-import numpy as np
-
 from huitu._common import coerce_xy, finalize, is_multi_input, prepare_axes
 
 
