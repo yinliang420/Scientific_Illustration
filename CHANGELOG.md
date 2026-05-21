@@ -2,6 +2,43 @@
 
 All notable changes to **huitu** are recorded here.
 
+## [0.5.2] — 2026-05-21
+
+Polish release after the three-round hardening loop closed (see
+[`docs/hardening-case-study.html`](docs/hardening-case-study.html) for
+the full engineering writeup).
+
+### Changed
+
+- **Dead-import sweep.** Eight stale imports removed across `huitu/`:
+  `Iterable` (in `archetype.py`, `general/radar.py`, `computational/band.py`),
+  `Path` (in `characterization/xrd.py`), `place_legend` (in
+  `pro/ridgeline.py`), `_GRADIENT_PALETTES` top-level reference (in
+  `pro/operando_pro.py`), and `numpy as np` (in `electrochem/cv.py` +
+  `gcd.py`). No behavior change; pytest stays 82/82.
+- **Version bump.** `pyproject.toml` 0.5.1 → 0.5.2 — the v0.5.1 string
+  had lagged behind the Round 2 + Round 3 fixes that already shipped
+  in the codebase via PR #2.
+
+### Added
+
+- **Three "fusion" examples** under `examples/nature_*.py` that
+  reproduce visual patterns from `figures4papers` using huitu's own API
+  (`role()`, `archetype.schematic_led`, semantic palette):
+  - `nature_immunostruct_bars.py` — 4-method grouped bar with
+    monotone-emphasis colour mapping.
+  - `nature_vigil_trend.py` — alpha-graduated trend lines with direct
+    end-of-line labels (no detached legend).
+  - `nature_schematic_led_demo.py` — end-to-end `archetype.schematic_led`
+    walkthrough: synthetic three-stage mechanism schematic in the hero
+    panel plus real XRD/CV/EIS + a capacity-by-stage bar in the four
+    support panels.
+- **100-figure random gallery** at
+  `real_data_test/random_gallery/render_100.py` — exercises every
+  public plot entry point (all 44 `plot_*` plus 4 archetypes) with
+  synthetic data + varied journal presets. 100 successful PNGs in ~14 s,
+  every category reached. Output gitignored.
+
 ## [0.5.1] — 2026-05-06
 
 Patch release: bug fixes surfaced by a 3-agent test-review-fix iteration
