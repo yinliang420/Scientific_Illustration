@@ -8,7 +8,7 @@ E_F = 0). TODO: add pymatgen BSVasprun / BandStructureSymmLine support (P2).
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable, Sequence, Tuple
+from typing import Sequence, Tuple
 
 import numpy as np
 import pandas as pd

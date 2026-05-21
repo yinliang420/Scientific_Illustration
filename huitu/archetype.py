@@ -28,7 +28,6 @@ Reference: ``Yuan1z0825/nature-skills`` / ``nature-figure``.
 from __future__ import annotations
 
 from string import ascii_lowercase
-from typing import Iterable
 
 import matplotlib.pyplot as plt
 

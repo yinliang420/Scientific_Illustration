@@ -23,7 +23,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from huitu._common import finalize, prepare_axes
-from huitu.style import PALETTES, get_cmap, _GRADIENT_PALETTES
+from huitu.style import PALETTES, get_cmap
 from ._license import require_pro
 
 
