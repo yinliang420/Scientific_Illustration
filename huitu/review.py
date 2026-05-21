@@ -11,7 +11,7 @@ Two utilities Nature-tier figures benefit from before submitting:
 2. :func:`reviewer_checklist` — given a metadata dict, prints / returns the
    pre-submission checklist that a skeptical reviewer or journal editor will
    apply: ``n`` definition, replicates, center / spread / test / correction,
-   source-data file, scale bar, image-integrity log.
+   source-data file, scale bar, image-integrity record.
 
 Neither helper opens a graphics device or modifies rcParams — both are safe
 to call from a pytest fixture, a CI gate, or an interactive notebook cell.
@@ -23,7 +23,7 @@ Reference: ``Yuan1z0825/nature-skills`` / ``nature-figure`` →
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, Sequence
+from typing import Sequence
 
 
 # ── Anti-redundancy ─────────────────────────────────────────────────────────
@@ -47,6 +47,15 @@ class PanelIssue:
         sev = self.severity.upper()
         pid = "/".join(self.panels) if self.panels else "—"
         return f"[{sev}] {pid}: {self.message}"
+
+
+def _lower_str(value) -> str:
+    """Coerce ``value`` to a lowercased ``str``; ``None`` becomes ``""``.
+
+    Defensive helper so panel descriptors with non-string fields (numpy
+    arrays, lists, ints, …) don't crash :func:`check_redundancy`.
+    """
+    return str(value).lower() if value is not None else ""
 
 
 def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
@@ -88,6 +97,7 @@ def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
     >>> [str(i) for i in issues]   # doctest: +ELLIPSIS
     ['[WARN] a/b: ... same scientific question ...']
     """
+    panels = list(panels)   # accept generators / non-sized iterables
     issues: list[PanelIssue] = []
     if not panels:
         return issues
@@ -95,15 +105,15 @@ def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
     # 1. Same scientific question (case- and whitespace-insensitive).
     by_question: dict[str, list[str]] = {}
     for p in panels:
-        q = " ".join((p.get("question") or "").lower().split())
+        q = " ".join(_lower_str(p.get("question")).split())
         if not q:
             issues.append(PanelIssue(
-                "info", (p.get("id", "?"),),
+                "info", (str(p.get("id", "?")),),
                 "panel is missing a 'question' — every Nature-style panel "
                 "should answer one well-formed scientific question."
             ))
             continue
-        by_question.setdefault(q, []).append(p.get("id", "?"))
+        by_question.setdefault(q, []).append(str(p.get("id", "?")))
     for q, ids in by_question.items():
         if len(ids) > 1:
             issues.append(PanelIssue(
@@ -113,14 +123,27 @@ def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
                 "overlapping subquestions."
             ))
 
+    # 1b. Duplicate panel ids — every Nature panel needs a unique letter.
+    seen: dict[str, int] = {}
+    for p in panels:
+        pid = str(p.get("id", "?"))
+        seen[pid] = seen.get(pid, 0) + 1
+    for pid, n in seen.items():
+        if n > 1:
+            issues.append(PanelIssue(
+                "warn", (pid,) * n,
+                f"panel id '{pid}' is duplicated {n} times — every Nature "
+                "panel needs a unique letter (a, b, c, …)."
+            ))
+
     # 2. Same data slice in two visual forms (e.g. stacked bar + pie of the
     #    same composition). Driven by the optional ``data`` tag.
     by_data: dict[str, list[tuple[str, str]]] = {}
     for p in panels:
-        d = (p.get("data") or "").lower().strip()
+        d = _lower_str(p.get("data")).strip()
         if not d:
             continue
-        by_data.setdefault(d, []).append((p.get("id", "?"), p.get("encoding", "?")))
+        by_data.setdefault(d, []).append((str(p.get("id", "?")), str(p.get("encoding", "?"))))
     for d, hits in by_data.items():
         if len(hits) > 1:
             ids = tuple(h[0] for h in hits)
@@ -135,7 +158,7 @@ def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
     # 3. Information hierarchy: overview → deviation → relationship.
     levels_present: set[str] = set()
     for p in panels:
-        lvl = (p.get("level") or _infer_level(p.get("encoding", ""))).lower()
+        lvl = _lower_str(p.get("level")) or _infer_level(_lower_str(p.get("encoding")))
         if lvl in _INFO_LEVELS:
             levels_present.add(lvl)
     if len(panels) >= 3:
@@ -150,7 +173,7 @@ def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
             ))
 
     # 4. Common redundancy traps (heuristic).
-    encodings = {p.get("id", "?"): (p.get("encoding") or "").lower() for p in panels}
+    encodings = {str(p.get("id", "?")): _lower_str(p.get("encoding")) for p in panels}
     ranked = [pid for pid, e in encodings.items()
               if "ranked" in e or "ranking" in e]
     if len(ranked) >= 2:
@@ -171,9 +194,9 @@ def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
     return issues
 
 
-def _infer_level(encoding: str) -> str:
+def _infer_level(encoding) -> str:
     """Best-effort mapping of an encoding string to an info-hierarchy level."""
-    e = (encoding or "").lower()
+    e = _lower_str(encoding)
     if any(k in e for k in ("z_score", "z-score", "diverging", "deviation",
                             "rdbu", "log2fc", "volcano")):
         return "deviation"

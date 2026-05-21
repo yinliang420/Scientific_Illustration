@@ -204,15 +204,41 @@ def pro_palettes() -> Dict[str, List[str]]:
 
 def register_pro_palettes() -> None:
     """Merge pro palettes into :data:`huitu.style.PALETTES` and the
-    gradient-allowed set. Safe to call multiple times."""
+    gradient-allowed set.
+
+    Safe to call multiple times — becomes a no-op once the names are already
+    present in the backing registry, and silently skips the gradient update if
+    huitu's top-level freeze has already replaced ``_GRADIENT_PALETTES`` with
+    a ``frozenset``.
+    """
     from huitu import style as _style
 
+    # Write to the mutable backing dict; ``style.PALETTES`` itself is a
+    # frozen ``MappingProxyType`` view.
+    target = getattr(_style, "_PALETTES_BACKING", None)
+    if target is None:  # pragma: no cover — older style.py without backing
+        target = _style.PALETTES  # type: ignore[assignment]
+
     pal = pro_palettes()
-    for name, colors in pal.items():
-        _style.PALETTES[name] = list(colors)
-    # allow gradient use for select palettes (style._GRADIENT_PALETTES is a set)
-    if hasattr(_style, "_GRADIENT_PALETTES"):
-        _style._GRADIENT_PALETTES.update(_PRO_GRADIENT_NAMES)  # type: ignore[attr-defined]
+    # Idempotency: if every pro palette is already registered, skip the write
+    # (avoids accidentally inflating the registry on repeated import-cycle calls).
+    if all(name in target for name in pal):
+        already_registered = True
+    else:
+        already_registered = False
+        for name, colors in pal.items():
+            target[name] = tuple(colors)
+
+    # Allow gradient use for select palettes. Only update when the gradient set
+    # is still a mutable ``set`` — once huitu/__init__.py rebinds it to a
+    # ``frozenset``, repeat registrations leave it alone.
+    grad = getattr(_style, "_GRADIENT_PALETTES", None)
+    if isinstance(grad, set):
+        grad.update(_PRO_GRADIENT_NAMES)
+
+    # ``already_registered`` is currently informational; keep it referenced so
+    # static checkers don't flag it as unused.
+    _ = already_registered
 
 
 def list_pro_palettes() -> List[str]:

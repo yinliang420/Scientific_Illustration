@@ -7,6 +7,9 @@
 [![Matplotlib](https://img.shields.io/badge/matplotlib-3.7%2B-11557c)](https://matplotlib.org/)
 [![Style](https://img.shields.io/badge/output-600%20dpi-brightgreen)]()
 [![SVG](https://img.shields.io/badge/SVG%2FPDF-editable--text-1a73e8)]()
+[![Hardening](https://img.shields.io/badge/case--study-3--round%20hardening-c02928)](docs/hardening-case-study.html)
+
+> 📑 v0.5.2 工程案例 — **[3 轮 4-agent 对抗迭代加固](docs/hardening-case-study.html)**：223 个对抗测试，14 个 bug 修复，攻击难度从"missing dict key"升级到"<code>gc.get_referents()</code> CPython 内省"。
 
 `huitu` 把 matplotlib + scienceplots 包装成"一行出图"的体验：
 
@@ -24,7 +27,7 @@
   `asymmetric_hero`，按论证类型而不是 `subplot(2,3)` 拼图。
 * **投稿 QA 工具** ✨ — `check_redundancy()` 检查多 panel 信息是否冗余，
   `reviewer_checklist()` 给出 reviewer 可能挑刺的字段清单。
-* **54 个调色板**（ggsci / Met-Brewer / Financial Times / Tol / Okabe-Ito /
+* **55 个调色板**（ggsci / Met-Brewer / Financial Times / Tol / Okabe-Ito /
   CARTO / Crameri / Nord / Editorial …），无需额外安装。
 
 ```python
@@ -290,7 +293,7 @@ cp -R docs/inspirations/skills/nature-reader         ~/.claude/skills/   # 中�
 ## 🎨 调色板
 
 ```python
-huitu.list_palettes()              # 54 个，按字母排序
+huitu.list_palettes()              # 55 个，按字母排序
 huitu.use_palette("met-hiroshige") # 全局应用
 cmap = huitu.get_cmap("crameri-batlow")
 ```
@@ -327,10 +330,12 @@ cmap = huitu.get_cmap("crameri-batlow")
 * **[USAGE.md](USAGE.md)** — 中文实操指南（推荐新手起步）
 * **[SKILL.md](SKILL.md)** — 完整 API catalog · 期刊预设详表 · quirks · 数据格式规范
 * **[CHANGELOG.md](CHANGELOG.md)** — 版本变更记录
+* **[docs/hardening-case-study.html](docs/hardening-case-study.html)** — 3 轮 4-agent 对抗迭代加固工程案例（223 个对抗测试 / 14+1 个 bug / 攻击难度 P0→GC 内省）✨ v0.5.2
 * **[docs/inspirations/](docs/inspirations/)** — 9 个真实 paper 画图脚本（`figures4papers`）+ 5 个 Nature 风 skill（citation / search / writing / response / reader），带 chart-family 路由表 ✨ v0.5.1
 * `examples/` — 31 个可独立运行的脚本，附合成样例数据
 * `real_data_test/test_pro_gallery.py` — 322 个高级图场景
 * `real_data_test/test_v05_features/` — v0.5 features 端到端测试（5 个脚本 + `run_all.sh`）
+* `real_data_test/test_v0{6,7,8}_adversarial/` — 3 轮对抗测试套件（共 223 case，全部 PASS）
 
 ---
 
