@@ -49,6 +49,15 @@ class PanelIssue:
         return f"[{sev}] {pid}: {self.message}"
 
 
+def _lower_str(value) -> str:
+    """Coerce ``value`` to a lowercased ``str``; ``None`` becomes ``""``.
+
+    Defensive helper so panel descriptors with non-string fields (numpy
+    arrays, lists, ints, …) don't crash :func:`check_redundancy`.
+    """
+    return str(value).lower() if value is not None else ""
+
+
 def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
     """Audit a multi-panel figure plan for redundancy.
 
@@ -96,7 +105,7 @@ def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
     # 1. Same scientific question (case- and whitespace-insensitive).
     by_question: dict[str, list[str]] = {}
     for p in panels:
-        q = " ".join((p.get("question") or "").lower().split())
+        q = " ".join(_lower_str(p.get("question")).split())
         if not q:
             issues.append(PanelIssue(
                 "info", (str(p.get("id", "?")),),
@@ -131,7 +140,7 @@ def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
     #    same composition). Driven by the optional ``data`` tag.
     by_data: dict[str, list[tuple[str, str]]] = {}
     for p in panels:
-        d = (p.get("data") or "").lower().strip()
+        d = _lower_str(p.get("data")).strip()
         if not d:
             continue
         by_data.setdefault(d, []).append((str(p.get("id", "?")), str(p.get("encoding", "?"))))
@@ -149,7 +158,7 @@ def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
     # 3. Information hierarchy: overview → deviation → relationship.
     levels_present: set[str] = set()
     for p in panels:
-        lvl = (p.get("level") or _infer_level(p.get("encoding", ""))).lower()
+        lvl = _lower_str(p.get("level")) or _infer_level(_lower_str(p.get("encoding")))
         if lvl in _INFO_LEVELS:
             levels_present.add(lvl)
     if len(panels) >= 3:
@@ -164,7 +173,7 @@ def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
             ))
 
     # 4. Common redundancy traps (heuristic).
-    encodings = {str(p.get("id", "?")): (p.get("encoding") or "").lower() for p in panels}
+    encodings = {str(p.get("id", "?")): _lower_str(p.get("encoding")) for p in panels}
     ranked = [pid for pid, e in encodings.items()
               if "ranked" in e or "ranking" in e]
     if len(ranked) >= 2:
@@ -185,9 +194,9 @@ def check_redundancy(panels: Sequence[dict]) -> list[PanelIssue]:
     return issues
 
 
-def _infer_level(encoding: str) -> str:
+def _infer_level(encoding) -> str:
     """Best-effort mapping of an encoding string to an info-hierarchy level."""
-    e = (encoding or "").lower()
+    e = _lower_str(encoding)
     if any(k in e for k in ("z_score", "z-score", "diverging", "deviation",
                             "rdbu", "log2fc", "volcano")):
         return "deviation"

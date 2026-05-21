@@ -14,10 +14,28 @@ custom rcParams after calling ``use_journal`` if needed.
 from __future__ import annotations
 
 from types import MappingProxyType
+from typing import Mapping
 
 from cycler import cycler
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+
+
+class _DefensivePaletteDict(dict):
+    """Backing storage that hands out **defensive list copies** of inner values.
+
+    Wrapped in :class:`types.MappingProxyType` to form the public ``PALETTES``
+    registry, so users see a ``mappingproxy`` (preserving the documented
+    "frozen at top level + cannot pickle" contract) AND ``PALETTES['nord']``
+    returns a fresh ``list`` on every access. That means
+    ``huitu.PALETTES['nord'][0] = '#000'`` mutates a throwaway list rather
+    than the live registry, while ``dict(huitu.PALETTES)`` still hands out
+    mutable lists for downstream consumption (pickle / deepcopy / json round-
+    trip).
+    """
+
+    def __getitem__(self, key):
+        return list(super().__getitem__(key))
 
 # Widths in inches; journals typically specify mm. 1 inch = 25.4 mm.
 _MM = 1.0 / 25.4
@@ -109,24 +127,38 @@ _SEMANTIC = [
 # not affect the categorical cycle assembled above.
 SEMANTIC_PALETTE = MappingProxyType(SEMANTIC_PALETTE)
 
-PALETTES: dict[str, list[str]] = {
-    "tol-bright": _TOL_BRIGHT,
-    "tol-muted": _TOL_MUTED,
-    "tol-vibrant": _TOL_VIBRANT,
-    "okabe-ito": _OKABE_ITO,
-    "carto-safe": _CARTO_SAFE,
-    "carto-bold": _CARTO_BOLD,
-    "nord": _NORD,
-    "editorial": _EDITORIAL,
-    "viridis6": _VIRIDIS6,
-    "nature-cat": _NATURE_CAT,
-    "nature-muted": _NATURE_MUTED,
-    "science-cat": _SCIENCE_CAT,
-    "crameri-batlow": _CRAMERI_BATLOW,
-    "crameri-roma": _CRAMERI_ROMA,
-    "bold-qualitative": _BOLD_QUALITATIVE,
-    "semantic": _SEMANTIC,
-}
+# Two-level freeze (preserves the ``type(PALETTES).__name__ == "mappingproxy"``
+# contract and the "cannot pickle the proxy" contract while sealing the inner
+# escape hatch from Round 1):
+#   * ``_PALETTES_BACKING`` is a :class:`_DefensivePaletteDict` (a ``dict``
+#     subclass). Inner values are stored as ``tuple`` so the backing itself
+#     can't be poisoned, and ``__getitem__`` hands out a fresh ``list`` on
+#     every access. ``huitu.pro`` writes to this backing at import time.
+#   * ``PALETTES`` is :class:`types.MappingProxyType` over the backing — it
+#     blocks ``__setitem__`` / ``__delitem__`` / ``pickle`` and is the public
+#     read-only view. Indexing via the proxy forwards to the backing's
+#     ``__getitem__`` so ``PALETTES['nord'][0] = '#000'`` mutates a throwaway
+#     list rather than the registry. ``dict(PALETTES)['nord']`` is therefore
+#     a fresh ``list`` that round-trips cleanly through pickle / deepcopy.
+_PALETTES_BACKING: _DefensivePaletteDict = _DefensivePaletteDict({
+    "tol-bright": tuple(_TOL_BRIGHT),
+    "tol-muted": tuple(_TOL_MUTED),
+    "tol-vibrant": tuple(_TOL_VIBRANT),
+    "okabe-ito": tuple(_OKABE_ITO),
+    "carto-safe": tuple(_CARTO_SAFE),
+    "carto-bold": tuple(_CARTO_BOLD),
+    "nord": tuple(_NORD),
+    "editorial": tuple(_EDITORIAL),
+    "viridis6": tuple(_VIRIDIS6),
+    "nature-cat": tuple(_NATURE_CAT),
+    "nature-muted": tuple(_NATURE_MUTED),
+    "science-cat": tuple(_SCIENCE_CAT),
+    "crameri-batlow": tuple(_CRAMERI_BATLOW),
+    "crameri-roma": tuple(_CRAMERI_ROMA),
+    "bold-qualitative": tuple(_BOLD_QUALITATIVE),
+    "semantic": tuple(_SEMANTIC),
+})
+PALETTES: Mapping[str, list[str]] = MappingProxyType(_PALETTES_BACKING)
 
 # Palettes whose hex lists are ordered in a perceptually meaningful way and
 # therefore make sense as smooth LinearSegmentedColormap gradients.
