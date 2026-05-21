@@ -1,6 +1,57 @@
+---
+name: huitu
+description: >-
+  Materials-science plotting skill that turns experimental, DFT and
+  electrochemistry measurements into journal-ready Python / matplotlib
+  figures with a single one-line call. Use whenever the user asks to
+  plot, draw, render, generate, or polish any of: XRD, XPS, Raman,
+  FTIR, UV-Vis / Tauc, PL, TGA / DSC, Rietveld, BET N₂ isotherm, CV,
+  GCD, cycling + CE, EIS Nyquist, Bode, Tafel, dQ/dV, band structure
+  (text input or pymatgen `BSVasprun` / `BandStructureSymmLine`), DOS /
+  PDOS, COHP / ICOHP, Pourbaix, binary phase diagram, crystal structure
+  (ASE / VESTA), bar, scatter, line, heatmap, box/violin, radar, 2-D
+  KDE density, SHAP-like bee-swarm, ridgeline, dumbbell, slope, bump,
+  parallel-coords, waffle, stream-graph, connected scatter, or any of
+  six in-situ / operando heatmap variants. Also triggers on multi-panel
+  Nature-style layout requests (schematic-led composite, dark image
+  plate, clinical triptych, asymmetric hero), multi-figure PDF report
+  compositing, and pre-submission anti-redundancy or reviewer-checklist
+  QA. Chinese triggers — 画图, 绘制, 出图, 画 XRD, CV 曲线, EIS 图,
+  BET 等温线, dQ/dV, 能带, 态密度, 相图, 期刊配图, Nature 风格图,
+  材料论文配图, 表征图, 多图组合 PDF, 冗余检查, 审稿清单, 库伦效率 — all activate the skill. Output is editable-text
+  SVG / PDF (PDF text remains selectable) plus 600 dpi PNG matching
+  eight journal presets (`nature`, `science`, `acs`, `rsc`, `wiley`,
+  `elsevier`, `ieee`, `default`); a semantic-role palette (`hero`,
+  `baseline`, `positive`, `negative`, `neutral`, `accent_*`) is
+  available for hero-vs-baseline comparisons. Not for dashboards,
+  interactive plotly / Bokeh / Altair, GIS, or 3-D molecular-dynamics
+  rendering — those use cases should route elsewhere.
+---
+
 # huitu — materials-science plotting skill
 
 Opinionated matplotlib/seaborn wrappers that turn the most common materials-science measurements into journal-ready figures with a one-line call. Every function accepts either a file path (two-column `.txt`/`.csv`), a NumPy `(N, 2)` array, a `(x, y)` tuple, or a `pandas.DataFrame`, and returns `(fig, ax)` so you can keep customising. (A small number of two-panel helpers — `plot_bet`, `plot_rietveld` — return `(fig, (ax1, ax2), …)` with extra payload; the per-row note in the catalogue calls those out.)
+
+## When to use this skill
+
+Activate **whenever** the user mentions any of:
+
+- A specific materials-science measurement name in English or Chinese:
+  `XRD / 衍射`, `XPS / 光电子能谱`, `Raman / 拉曼`, `FTIR / 红外`, `UV-Vis / 紫外可见`, `PL / 荧光`, `TGA / DSC / 热分析`, `Rietveld / 精修`, `BET / 等温线`, `CV / 循环伏安`, `GCD / 充放电`, `EIS / 阻抗 / Nyquist / Bode`, `Tafel`, `dQ/dV / 差分容量`, `band / 能带`, `DOS / PDOS / 态密度`, `COHP`, `Pourbaix / 电位-pH`, `phase diagram / 相图`, `crystal / 晶体结构`, `operando / 原位`.
+- General plot families: `bar / 柱图`, `scatter / 散点`, `line / 折线`, `heatmap / 热图`, `box / violin / 箱线`, `radar / 雷达`, `KDE / density / 密度`, `SHAP`, `ridgeline / 山脊`, `bump / 排名`, `streamgraph / 河流图`, `waffle`, `parallel / 平行坐标`.
+- Nature-style multi-panel layout: `schematic-led / 示意主导`, `image plate / 显微 grid`, `clinical triptych / 临床三段`, `asymmetric hero / 不对称`.
+- Workflow QA: `anti-redundancy / 冗余检查`, `reviewer checklist / 审稿清单`, `figure contract / 投稿前自检`.
+- Output / export: `journal-ready / 期刊级`, `Nature 风格`, `editable SVG / PDF`, `600 dpi`, `multi-page PDF / 多图组合`.
+- Verbs: `plot / draw / render / generate / make / 画 / 绘制 / 出图 / 渲染 / 生成`.
+
+## When NOT to load
+
+- Interactive / web plotting (`plotly`, `bokeh`, `altair`, `dash`, `streamlit`).
+- GIS / map plotting (`folium`, `geopandas`-led work).
+- 3-D molecular dynamics rendering, ray tracing, ovito-led visualisation.
+- Illustrator / Figma-first infographic layout (huitu's archetypes are
+  matplotlib gridspec, not freeform vector design).
+- Pure data-analysis (no figure deliverable).
 
 ## Quick start
 
