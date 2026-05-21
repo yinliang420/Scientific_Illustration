@@ -100,6 +100,23 @@
   hr { border: 0; border-top: 1px solid var(--rule); margin: 36px 0; }
   /* fix table tight code */
   td code { font-size: 13px; }
+  /* chart figures rendered with huitu itself */
+  .figure {
+    margin: 14px 0 22px;
+  }
+  .figure img {
+    width: 100%; height: auto; display: block;
+    border: 1px solid var(--rule); border-radius: 4px; background: var(--bg);
+  }
+  .figure .caption {
+    color: var(--fg-muted); font-size: 12.5px; padding: 6px 4px 0;
+    font-style: italic;
+  }
+  .figure-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+    margin: 14px 0 22px;
+  }
+  @media (max-width: 720px) { .figure-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -222,6 +239,19 @@ huitu.role('hero')   # → '#FF00FF'  ← silent corruption</code></pre>
 </table>
 
 <h2>Aggregate view</h2>
+
+<div class="figure-grid">
+  <figure class="figure">
+    <img src="showcase/hardening-bugs-by-round.png" alt="Stacked bar chart: bugs surfaced per round, split by P0/P1/P2 severity. Round 1: 8 (3 P0 + 4 P1 + 1 P2). Round 2: 7 (3 + 2 + 2). Round 3: 1 (P1 only).">
+    <div class="caption">Bugs by severity per round. The P0 column empties between Round 2 and Round 3 — by then the easy critical bugs are gone, and Round 3's remaining find is a P1 that required CPython-internals knowledge to reach.</div>
+  </figure>
+  <figure class="figure">
+    <img src="showcase/hardening-tests-by-round.png" alt="Bar chart: 67 cases written in Round 1, 56 in Round 2, 100 in Round 3. Cumulative coverage rises 67 → 123 → 223 across the three rounds.">
+    <div class="caption">Test-case throughput. Even when a round finds few new bugs (Round 3's single bug from 100 cases), the regression-prevention payload still grows — the cumulative suite reaches 223 adversarial cases before Round 4 would start.</div>
+  </figure>
+</div>
+
+<p class="small">Both charts were rendered with <code>huitu</code> itself — <code>huitu.use_journal("default")</code> + <code>huitu.role(...)</code> + matplotlib bars. Source under <a href="../tools/render_hardening_charts.py"><code>tools/render_hardening_charts.py</code></a>; regenerable from the repo root with <code>python tools/render_hardening_charts.py</code>.</p>
 
 <table>
   <thead>
