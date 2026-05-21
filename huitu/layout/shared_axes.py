@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 
 
@@ -53,4 +55,22 @@ def share_axes(axes, which: str = "x"):
                     a.tick_params(labelbottom=False)
                 if which in ("y", "both") and j > 0:
                     a.tick_params(labelleft=False)
+    elif arr.ndim == 1 and arr.size > 1:
+        # Detect row (same y0) vs column layout via axes positions. Use
+        # math.isclose so floating-point reflow under constrained_layout
+        # doesn't push us into the column branch by accident.
+        same_row = math.isclose(
+            arr[0].get_position().y0,
+            arr[-1].get_position().y0,
+            abs_tol=1e-6,
+        )
+        n = arr.size
+        for k in range(n):
+            a = arr[k]
+            if same_row:
+                if which in ("y", "both") and k > 0:
+                    a.tick_params(labelleft=False)
+            else:
+                if which in ("x", "both") and k < n - 1:
+                    a.tick_params(labelbottom=False)
     return axes

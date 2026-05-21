@@ -58,7 +58,22 @@ def plot_scatter(
         else:
             slope, intercept = np.polyfit(x, y, 1)
         xs = np.linspace(np.min(x), np.max(x), 100)
-        ax.plot(xs, slope * xs + intercept, "r--", lw=1.0, label=f"fit: y={slope:.3g}x+{intercept:.3g}")
+        y_fit = slope * xs + intercept
+        fit_color = "r"
+        ax.plot(xs, y_fit, fit_color + "--", lw=1.0,
+                label=f"fit: y={slope:.3g}x+{intercept:.3g}")
+        # 95% CI band from standard linear-regression SE
+        n = x.size
+        if n >= 3:
+            x_mean = float(np.mean(x))
+            Sxx = float(np.sum((x - x_mean) ** 2))
+            resid = y - (slope * x + intercept)
+            dof = max(n - 2, 1)
+            sigma = float(np.sqrt(np.sum(resid ** 2) / dof))
+            if Sxx > 0:
+                se = sigma * np.sqrt(1.0 / n + (xs - x_mean) ** 2 / Sxx)
+                ax.fill_between(xs, y_fit - 1.96 * se, y_fit + 1.96 * se,
+                                alpha=0.2, color=fit_color, linewidth=0)
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)

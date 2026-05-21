@@ -60,6 +60,8 @@ def plot_operando_waterfall(
     save=None,
     cmap: str = "met-hiroshige",
     stagger: float = 0.08,
+    auto_stagger: bool = False,
+    offset: float | None = None,
     linewidth: float = 0.9,
     fill: bool = False,
     fill_alpha: float = 0.25,
@@ -67,6 +69,7 @@ def plot_operando_waterfall(
     ylabel: str | None = None,
     cbar_label: str | None = None,
     every: int = 1,
+    figsize: tuple[float, float] = (6.5, 4.5),
     **kwargs,
 ):
     """Stagger-stacked operando spectra, colored by the perturbation axis.
@@ -80,7 +83,15 @@ def plot_operando_waterfall(
     y
         Length-M perturbation values (time, potential, temperature).
     stagger
-        Vertical offset per spectrum, as a fraction of the spectrum's peak.
+        Vertical offset per spectrum. By default this is in absolute units
+        of the spectrum intensity. Pass ``auto_stagger=True`` to treat it as
+        a fraction of the spectrum's peak (useful when intensities span
+        many orders of magnitude).
+    auto_stagger
+        If True, ``step = stagger * peak``; otherwise ``step = stagger``.
+    offset
+        Explicit absolute step per spectrum. When supplied, overrides
+        ``stagger`` / ``auto_stagger``.
     fill
         If True, fill under each curve.
     every
@@ -98,11 +109,26 @@ def plot_operando_waterfall(
     x = np.asarray(x, dtype=float)
     y = np.asarray(y, dtype=float)
 
-    fig, ax = prepare_axes(ax, journal)
+    if ax is None:
+        from huitu.style import use_journal as _uj
+        import huitu.style as _style
+        if _style._ACTIVE_PRESET is None or journal != "default":
+            _uj(journal)
+        fig, ax = plt.subplots(figsize=figsize)
+    else:
+        fig, ax = prepare_axes(ax, journal)
     cmap_obj = _resolve_cmap(cmap)
     peak = float(np.nanmax(Z))
     if peak <= 0:
         peak = 1.0
+    # Step priority: explicit ``offset`` > ``stagger * peak`` (auto_stagger=True)
+    # > raw ``stagger`` (back-compat: absolute units per spectrum).
+    if offset is not None:
+        step = float(offset)
+    elif auto_stagger:
+        step = float(stagger) * peak
+    else:
+        step = float(stagger)
 
     idxs = list(range(0, M, max(int(every), 1)))
     n_plot = len(idxs)
@@ -110,10 +136,10 @@ def plot_operando_waterfall(
         frac = i / max(M - 1, 1)
         col = cmap_obj(frac) if cmap_obj is not None else None
         z = n_plot - k  # earlier spectra drawn behind
-        offset = k * stagger * peak
-        curve = Z[i] + offset
+        off = k * step
+        curve = Z[i] + off
         if fill:
-            ax.fill_between(x, offset, curve, color=col, alpha=fill_alpha,
+            ax.fill_between(x, off, curve, color=col, alpha=fill_alpha,
                             linewidth=0, zorder=z)
         ax.plot(x, curve, color=col, linewidth=linewidth, zorder=z + 0.3)
 
@@ -153,7 +179,7 @@ def plot_operando_xrd_echem(
     ylabel: str = "time / capacity",
     echem_xlabel: str = "E (V)",
     cbar_label: str | None = None,
-    width_ratios=(3.0, 1.0),
+    width_ratios=(2.5, 1.0),
     echem_color: str = "#BC3C29",
     contour_levels=None,
     log_z: bool = False,
@@ -176,6 +202,7 @@ def plot_operando_xrd_echem(
         raise ValueError("shape mismatch between data, x, y, echem")
 
     from huitu.style import use_journal as _uj
+    from matplotlib.ticker import MaxNLocator
     _uj(journal)
     # Opt out of constrained_layout: the colorbar+subplots_adjust dance below
     # is incompatible and matplotlib otherwise emits "incompatible with
@@ -183,7 +210,7 @@ def plot_operando_xrd_echem(
     fig, axes = plt.subplots(
         1, 2, sharey=True,
         gridspec_kw={"width_ratios": list(width_ratios)},
-        figsize=(4.8, 3.6),
+        figsize=(6.0, 3.6),
         constrained_layout=False,
     )
     ax_map, ax_ec = axes
@@ -209,7 +236,9 @@ def plot_operando_xrd_echem(
     ax_map.spines["right"].set_visible(False)
     ax_map.tick_params(which="both", top=False, right=False)
 
-    # Colorbar inside map panel bounds (via dedicated axes to avoid squeezing).
+    # Colorbar attached to the heatmap panel only; spanning both axes
+    # caused matplotlib (under constrained_layout=False) to overlap the
+    # heatmap (see polish test_case_05_operando_xrd_echem_layout).
     cbar = fig.colorbar(im, ax=ax_map, shrink=0.85, pad=0.02, aspect=25,
                         location="top")
     cbar.set_label(cbar_label or "Intensity", labelpad=4)
@@ -219,6 +248,8 @@ def plot_operando_xrd_echem(
     # Electrochemistry panel
     ax_ec.plot(e, y, color=echem_color, linewidth=1.2)
     ax_ec.set_xlabel(echem_xlabel)
+    # Prevent x-tick label collision on the narrower right panel.
+    ax_ec.xaxis.set_major_locator(MaxNLocator(3))
     ax_ec.spines["top"].set_visible(False)
     ax_ec.spines["right"].set_visible(False)
     ax_ec.tick_params(which="both", top=False, right=False, labelleft=False)
@@ -244,7 +275,7 @@ def plot_operando_3d_surface(
     azim: float = -60,
     xlabel: str | None = None,
     ylabel: str | None = None,
-    zlabel: str = "Intensity",
+    zlabel: str | None = None,
     stride: int = 1,
     **kwargs,
 ):
@@ -269,18 +300,16 @@ def plot_operando_3d_surface(
 
     from huitu.style import use_journal as _uj
     _uj(journal)
-    fig = plt.figure(figsize=(5.2, 4.0))
+    fig = plt.figure(figsize=(6.0, 4.5))
     ax = fig.add_subplot(111, projection="3d")
     cmap_obj = _resolve_cmap(cmap)
-    surf = ax.plot_surface(X, Y, Z, cmap=cmap_obj, linewidth=0.15,
-                           edgecolor="#444444", rstride=max(1, M // 30),
+    surf = ax.plot_surface(X, Y, Z, cmap=cmap_obj, linewidth=0.1,
+                           edgecolor="#BBBBBB", rstride=max(1, M // 30),
                            cstride=stride, antialiased=True, alpha=0.92)
     ax.view_init(elev=elev, azim=azim)
-    if xlabel:
-        ax.set_xlabel(xlabel, labelpad=6)
-    if ylabel:
-        ax.set_ylabel(ylabel, labelpad=6)
-    ax.set_zlabel(zlabel, labelpad=4)
+    ax.set_xlabel(xlabel if xlabel is not None else "2θ (°)", labelpad=6)
+    ax.set_ylabel(ylabel if ylabel is not None else "time", labelpad=6)
+    ax.set_zlabel(zlabel if zlabel is not None else "Intensity", labelpad=4)
     # Lighten grid background
     for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
         axis.pane.set_facecolor("white")

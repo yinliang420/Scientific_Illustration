@@ -44,7 +44,11 @@ def plot_eis(
     ax.set_xlabel(r"Z$^{\prime}$ ($\Omega$)")
     ax.set_ylabel(r"-Z$^{\prime\prime}$ ($\Omega$)")
     if equal_aspect:
-        ax.set_aspect("equal", adjustable="box")
+        # adjustable="datalim" keeps the box from collapsing to a thin strip
+        # (which set_aspect("equal", adjustable="box") was doing); set_box_aspect
+        # then locks the visual aspect to 1:1 so the semicircle reads as a circle.
+        ax.set_aspect("equal", adjustable="datalim")
+        ax.set_box_aspect(1.0)
     if any(l for l in labels):
         ax.legend(loc="best")
 

@@ -223,6 +223,8 @@ def dark_image_plate(
             idx += 1
             row_axes.append(ax)
         grid.append(row_axes)
+    fig.set_constrained_layout_pads(w_pad=0.005, h_pad=0.005,
+                                    wspace=0.01, hspace=0.01)
     return fig, grid
 
 
@@ -250,7 +252,8 @@ def clinical_triptych(
     journal
         Journal preset name.
     figsize
-        Override figsize. Defaults to ``(7.2, 6.8)``.
+        Override figsize. Defaults to ``(7.2, 7.2)`` — taller than the other
+        archetypes to keep bottom-row x-tick labels clear of the figure edge.
     n_cols
         Outcomes per row. ``3`` is canonical.
     height_ratios
@@ -269,7 +272,7 @@ def clinical_triptych(
     """
     use_journal(journal)
     if figsize is None:
-        figsize = (7.2, 6.8)
+        figsize = (7.2, 7.2)
     fig = plt.figure(figsize=figsize, constrained_layout=True)
     gs = fig.add_gridspec(
         3, n_cols,
@@ -282,6 +285,7 @@ def clinical_triptych(
         letters = _flat_letters(3 * n_cols)
         for ax, ltr in zip(top + mid + bot, letters):
             _label(ax, ltr)
+    fig.set_constrained_layout_pads(h_pad=0.08)
     return fig, {"top": top, "mid": mid, "bot": bot}
 
 
@@ -300,16 +304,17 @@ def asymmetric_hero(
     Layout (3 rows × 4 cols GridSpec)::
 
         ┌──────────────┬──────┬─────┐
-        │      a       │  b   │     │
-        ├──────────────┼──────┤     │
-        │      c       │  d   │  e  │   ← e spans all 3 rows
-        ├──────────────┴──────┤     │
-        │           f         │     │
-        └─────────────────────┴─────┘
+        │              │  b   │     │
+        │      a       ├──────┤     │
+        │  (2-row hero)│  c   │  e  │   ← e spans all 3 rows
+        ├──────┬───────┴──────┤     │
+        │  d   │      f       │     │
+        └──────┴──────────────┴─────┘
 
     Use when one panel is biologically/conceptually central (UMAP, circular
-    genome plot, mechanism schematic) and should dominate; the rest are
-    smaller supporting plots.
+    genome plot, mechanism schematic) and should dominate by area; the rest
+    are smaller supporting plots. Panel ``e`` is the *tallest* column
+    (spans all rows) but ``a`` claims the *most area* and reads as the hero.
 
     Parameters
     ----------
@@ -326,20 +331,21 @@ def asymmetric_hero(
     -------
     fig : matplotlib.figure.Figure
     axes : dict
-        Keys ``'a'`` … ``'f'``. Panel ``'e'`` is the hero (spans all 3 rows
-        of the rightmost column).
+        Keys ``'a'`` … ``'f'``. Panel ``'a'`` is the hero (spans 2 rows ×
+        2 cols on the left, largest area). Panel ``'e'`` is the spanning
+        column on the right (tallest, but narrower).
     """
     use_journal(journal)
     if figsize is None:
         figsize = (7.2, 5.8)
     fig = plt.figure(figsize=figsize, constrained_layout=True)
     gs = fig.add_gridspec(3, 4)
-    ax_a = fig.add_subplot(gs[0, :2])
+    ax_a = fig.add_subplot(gs[:2, :2])   # hero — 2×2 left block (largest area)
     ax_b = fig.add_subplot(gs[0, 2])
-    ax_c = fig.add_subplot(gs[1, :2])
-    ax_d = fig.add_subplot(gs[1, 2])
-    ax_e = fig.add_subplot(gs[:, 3])     # hero — spans all rows
-    ax_f = fig.add_subplot(gs[2, :2])
+    ax_c = fig.add_subplot(gs[1, 2])
+    ax_d = fig.add_subplot(gs[2, 0])
+    ax_e = fig.add_subplot(gs[:, 3])     # spans all 3 rows (tallest)
+    ax_f = fig.add_subplot(gs[2, 1:3])
     if panel_labels:
         for ax, ltr in zip(
             [ax_a, ax_b, ax_c, ax_d, ax_e, ax_f],
