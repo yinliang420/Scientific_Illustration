@@ -47,6 +47,10 @@ SCRIPTS = [
     ("shared_axes_demo.py", "shared_axes_demo.png"),
     ("crystal_ase.py", "crystal_ase.png"),
     ("crystal_vesta.py", "crystal_vesta.png"),
+    # v0.6 batch — BET / dQ-dV / multi-page PDF report
+    ("bet.py", "bet.png"),
+    ("dqdv.py", "dqdv.png"),
+    ("pdf_report.py", "pdf_report.pdf"),
 ]
 
 

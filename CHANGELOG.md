@@ -2,6 +2,59 @@
 
 All notable changes to **huitu** are recorded here.
 
+## [0.6.0] — 2026-05-21
+
+Minor release: four new functions long advertised in the roadmap, plus a
+documentation overhaul that distinguishes "library source" from "demo
+script" everywhere it had been ambiguous.
+
+### Added — four new plot helpers
+
+- **`plot_bet`** (`huitu/characterization/bet.py`) — Brunauer–Emmett–Teller
+  N₂ adsorption isotherm in two panels: raw isotherm + BET linear plot
+  with monolayer capacity ``V_m``, BET surface area ``S_BET``, BET
+  constant ``C``, and fit quality ``R²`` annotated inline. Optional
+  desorption branch + IUPAC default fit window ``0.05 ≤ P/P₀ ≤ 0.30``.
+- **`plot_dqdv`** (`huitu/electrochem/dqdv.py`) — Differential capacity
+  ``dQ/dV`` vs ``V`` for battery characterisation. Optional
+  Savitzky–Golay smoothing (`smooth="savgol"`); accepts a list of cycles
+  for multi-cycle overlay (peak shift / broadening on ageing).
+- **`make_pdf_report`** (`huitu/layout/pdf_report.py`) — multi-figure PDF
+  compositor. Bundle any list of figures into one PDF with optional
+  cover page + metadata block + per-page captions. Uses matplotlib's
+  ``PdfPages``; PDF text remains selectable thanks to v0.5's global
+  ``pdf.fonttype=42``.
+- **pymatgen support in `plot_band`** — `huitu/computational/band.py` now
+  accepts `BSVasprun` and `BandStructureSymmLine` objects directly. High-
+  symmetry k-points are auto-extracted from the band structure's branches,
+  so callers don't need to pass `kpoints=` manually. Spin-polarised
+  calculations have their two channels concatenated. The pymatgen import
+  is optional — pure-text input still works without pymatgen installed.
+
+### Documentation
+
+- **`REPO_LAYOUT.md`** (new, repo root) — one-stop reference for every
+  directory's purpose, the tracked-vs-local boundary, the "add a new
+  plot type" checklist.
+- **`SKILL.md` Plot catalogue table rewritten** to add a `Source` column
+  pointing at the file where each function is *implemented*. Previously
+  the catalogue only listed the `examples/` demo path, which suggested
+  the demo scripts were the implementation. They aren't — every demo is
+  a 10–30 line wrapper that imports from `huitu`. The new format
+  eliminates the ambiguity.
+
+### Tests / examples
+
+- `examples/bet.py`, `examples/dqdv.py`, `examples/pdf_report.py` — one
+  thin demo per new function, following the existing house style.
+- 4 new unit tests added to `tests/test_smoke.py` covering the new
+  functions across the standard preset matrix.
+
+### Version
+
+- `pyproject.toml` 0.5.2 → 0.6.0 (minor bump because the public API
+  grew by four functions).
+
 ## [0.5.2] — 2026-05-21
 
 Polish release after the three-round hardening loop closed (see
