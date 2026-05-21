@@ -77,6 +77,23 @@ from huitu.pro import (
     plot_operando_contour,
 )
 
+# ``style.PALETTES`` is already a ``MappingProxyType`` over a
+# ``_DefensivePaletteDict`` from import time. The proxy blocks
+# ``__setitem__``/``__delitem__`` and the backing's ``__getitem__`` returns a
+# defensive ``list`` copy so ``huitu.PALETTES['nord'][0] = '#000'`` mutates a
+# throwaway and can't pollute the registry.
+#
+# Here we (a) re-export the alias at the top level (so ``huitu.PALETTES`` and
+# ``huitu.style.PALETTES`` stay in sync after ``huitu.pro`` extends the
+# backing), and (b) replace ``_GRADIENT_PALETTES`` with a ``frozenset`` so
+# user code can't smuggle in new gradient names.
+# Must come AFTER ``from huitu import pro`` (which calls
+# ``register_pro_palettes()`` and may extend ``_GRADIENT_PALETTES``).
+import huitu.style as _style
+if isinstance(_style._GRADIENT_PALETTES, set):
+    _style._GRADIENT_PALETTES = frozenset(_style._GRADIENT_PALETTES)
+PALETTES = _style.PALETTES
+
 try:
     __version__ = version("huitu")
 except PackageNotFoundError:
