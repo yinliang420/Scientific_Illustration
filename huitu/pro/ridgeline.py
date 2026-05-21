@@ -6,7 +6,7 @@ from typing import Iterable, Sequence
 
 import numpy as np
 
-from huitu._common import finalize, prepare_axes, place_legend
+from huitu._common import finalize, prepare_axes
 from huitu.style import get_cmap
 from ._license import require_pro
 
