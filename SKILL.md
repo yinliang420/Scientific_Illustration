@@ -53,6 +53,28 @@ Activate **whenever** the user mentions any of:
   matplotlib gridspec, not freeform vector design).
 - Pure data-analysis (no figure deliverable).
 
+## Installation (both layers needed for full functionality)
+
+`huitu` ships as two installable layers — install **both** for an
+end-to-end agent-callable plotting skill:
+
+1. **Python package** (`pip install -e .` from the repo, or `pip install
+   huitu-0.6.0-py3-none-any.whl` from a GitHub Release) — provides
+   `import huitu` and the 47 `plot_*` functions + 4 archetypes that
+   actually render figures.
+
+2. **Skill bundle** (`cp -R . ~/.claude/skills/huitu/` for Claude Code,
+   or `cp -R . ~/.codex/skills/huitu/` for Codex CLI) — installs this
+   SKILL.md so the agent auto-activates on materials-science plotting
+   queries in either English or Chinese. The skill loader reads the
+   YAML frontmatter at the top of this file for its activation
+   description.
+
+Installing only the skill bundle without the Python package leaves the
+agent able to read the API catalogue but unable to render figures.
+Installing only the Python package without the skill bundle means you
+have to `import huitu` manually — no auto-activation.
+
 ## Quick start
 
 ```python
