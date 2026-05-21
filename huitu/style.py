@@ -34,6 +34,90 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 
+# Active preset cache: lets ``prepare_axes`` skip re-applying ``use_journal``
+# when the caller already picked one. Without this guard, every ``plot_*``
+# call resets rcParams via ``rcdefaults()``, which silently clobbers any
+# user-set rc overrides (e.g. ``mpl.rcParams['font.family']='Times'``) that
+# were applied *after* ``use_journal``. Read directly through the
+# ``huitu.style._ACTIVE_PRESET`` attribute so callers see the latest value.
+_ACTIVE_PRESET: str | None = None
+
+# Patch sentinel — set once :func:`use_journal` installs the SVG-savefig
+# post-processing hook that rewrites mathtext fallback (STIX) font-family
+# attributes to match the active body font. The hook makes the mathtext
+# label `r"2$\theta$ ($^\circ$)"` render with a single ``font-family`` in
+# the saved SVG even when ``\circ`` is missing from Helvetica and matplotlib
+# silently falls back to STIXGeneral. Without this, the user sees a
+# Helvetica '2θ' next to a serif '∘' — the "好奇怪整个字体形式" complaint.
+_SVG_FONT_UNIFY_INSTALLED = False
+
+
+def _install_svg_font_unify_hook() -> None:
+    """Monkey-patch ``Figure.savefig`` to unify mathtext STIX fallback fonts
+    with the body family in SVG output.
+
+    Runs once. Idempotent (guarded by ``_SVG_FONT_UNIFY_INSTALLED``). Only
+    rewrites files when:
+      * ``svg.fonttype == "none"`` (text stays as <text>/<tspan>)
+      * Output path ends with ``.svg``
+      * Saved file contains a ``'STIXGeneral'`` etc. fragment
+
+    Why monkey-patch rather than a wrapper utility: the polish tests (and a
+    fair amount of user code) call ``fig.savefig`` directly, bypassing
+    ``huitu._common.finalize``. A pre-save hook is the only intercept point
+    that catches both code paths.
+    """
+    global _SVG_FONT_UNIFY_INSTALLED
+    if _SVG_FONT_UNIFY_INSTALLED:
+        return
+    import os
+    import re
+
+    from matplotlib.figure import Figure
+
+    _orig_savefig = Figure.savefig
+
+    def _patched_savefig(self, fname, *args, **kwargs):
+        result = _orig_savefig(self, fname, *args, **kwargs)
+        try:
+            if not isinstance(fname, (str, os.PathLike)):
+                return result
+            path = os.fspath(fname)
+            if not path.lower().endswith(".svg"):
+                return result
+            if str(mpl.rcParams.get("svg.fonttype", "")).lower() != "none":
+                return result
+            with open(path, "rb") as f:
+                head = f.read(2048)
+            if b"STIX" not in head:
+                with open(path, "rb") as f:
+                    if b"STIX" not in f.read():
+                        return result
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+            if "STIX" not in content:
+                return result
+            stack = mpl.rcParams.get("font.family", [])
+            if isinstance(stack, str):
+                stack = [stack]
+            if not stack:
+                return result
+            body_family = ", ".join(repr(f) for f in stack)
+            new_content = re.sub(
+                r"'STIX[A-Za-z]+'", body_family, content
+            )
+            if new_content != content:
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write(new_content)
+        except Exception:
+            # Never break savefig because of the hook.
+            pass
+        return result
+
+    Figure.savefig = _patched_savefig
+    _SVG_FONT_UNIFY_INSTALLED = True
+
+
 class _DefensivePaletteDict(dict):
     """Backing storage that hands out **defensive list copies** of inner values.
 
@@ -277,6 +361,12 @@ PALETTES: Mapping[str, list[str]] = MappingProxyType(_PALETTES_BACKING)
 # therefore make sense as smooth LinearSegmentedColormap gradients.
 _GRADIENT_PALETTES = {"crameri-batlow", "crameri-roma", "viridis6"}
 
+# Font stacks used by individual presets. Helvetica chain is the default
+# sans choice (Nature/ACS/Wiley/Elsevier/RSC house style); a serif stack is
+# used for Science / IEEE which traditionally typeset body text in Times.
+_SANS_FAMILY = ["Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans"]
+_SERIF_FAMILY = ["Times New Roman", "Liberation Serif", "DejaVu Serif", "serif"]
+
 # Per-journal defaults — palette choice reflects each house's published style.
 _PRESETS = {
     "default": {
@@ -289,6 +379,9 @@ _PRESETS = {
             "lines.linewidth": 1.2,
             # High-res default; matches most journal minimums.
             "savefig.dpi": 600,
+            "font.family":      list(_SANS_FAMILY),
+            "font.sans-serif":  list(_SANS_FAMILY),
+            "mathtext.fontset": "dejavusans",
         },
     },
     "nature": {
@@ -302,6 +395,9 @@ _PRESETS = {
             # Nature: 300 dpi colour, 600 dpi halftone, 1200 dpi line art.
             # 600 dpi is a safe default for mixed raster/vector panels.
             "savefig.dpi": 600,
+            "font.family":      list(_SANS_FAMILY),
+            "font.sans-serif":  list(_SANS_FAMILY),
+            "mathtext.fontset": "dejavusans",
         },
     },
     "science": {
@@ -314,6 +410,10 @@ _PRESETS = {
             "lines.linewidth": 1.0,
             # Science/AAAS: minimum 300 dpi colour / 600 dpi line at final size.
             "savefig.dpi": 600,
+            # Science magazine typesets body text in serif.
+            "font.family":      list(_SERIF_FAMILY),
+            "font.serif":       list(_SERIF_FAMILY),
+            "mathtext.fontset": "stix",
         },
     },
     "acs": {
@@ -326,6 +426,9 @@ _PRESETS = {
             "lines.linewidth": 1.1,
             # ACS: 300 dpi minimum for colour/halftone; 1200 dpi for line art.
             "savefig.dpi": 600,
+            "font.family":      list(_SANS_FAMILY),
+            "font.sans-serif":  list(_SANS_FAMILY),
+            "mathtext.fontset": "dejavusans",
         },
     },
     "rsc": {
@@ -338,6 +441,9 @@ _PRESETS = {
             "lines.linewidth": 1.0,
             # RSC: 600 dpi required for bitmap figures.
             "savefig.dpi": 600,
+            "font.family":      list(_SANS_FAMILY),
+            "font.sans-serif":  list(_SANS_FAMILY),
+            "mathtext.fontset": "dejavusans",
         },
     },
     "wiley": {
@@ -350,6 +456,9 @@ _PRESETS = {
             "lines.linewidth": 1.1,
             # Wiley: 300–600 dpi raster; bump to 600 for safety.
             "savefig.dpi": 600,
+            "font.family":      list(_SANS_FAMILY),
+            "font.sans-serif":  list(_SANS_FAMILY),
+            "mathtext.fontset": "dejavusans",
         },
     },
     "elsevier": {
@@ -362,6 +471,9 @@ _PRESETS = {
             "lines.linewidth": 1.0,
             # Elsevier: 300 dpi colour/halftone, 500–1000 for line.
             "savefig.dpi": 600,
+            "font.family":      list(_SANS_FAMILY),
+            "font.sans-serif":  list(_SANS_FAMILY),
+            "mathtext.fontset": "dejavusans",
         },
     },
     "ieee": {
@@ -374,6 +486,10 @@ _PRESETS = {
             "lines.linewidth": 1.0,
             # IEEE: 300 dpi minimum for photos, 600 dpi for halftone/combo.
             "savefig.dpi": 600,
+            # IEEE Transactions body text is serif.
+            "font.family":      list(_SERIF_FAMILY),
+            "font.serif":       list(_SERIF_FAMILY),
+            "mathtext.fontset": "stix",
         },
     },
 }
@@ -509,11 +625,11 @@ def use_journal(name: str = "default", cjk: bool = False) -> None:
             f"unknown journal preset '{name}'. choices: {sorted(_PRESETS)}"
         )
     preset = _PRESETS[key]
+    # Install SVG-savefig font-unification hook lazily on first preset.
+    _install_svg_font_unify_hook()
     mpl.rcdefaults()
     _apply_scienceplots(preset["styles"])
     common_rc = dict(_COMMON_RC)
-    if cjk:
-        common_rc["font.family"] = list(_CJK_FAMILIES) + list(_COMMON_RC["font.family"])
     mpl.rcParams.update(common_rc)
     # Derive tick/label/legend sizes from the preset's base font.size.
     # Hierarchy (Nature/Science): axes.labelsize = base+1, tick/legend = base.
@@ -528,6 +644,23 @@ def use_journal(name: str = "default", cjk: bool = False) -> None:
         }
     )
     mpl.rcParams.update(preset["rc"])
+    # CJK prepending must run *after* the preset's font.family has been
+    # applied, otherwise the preset overwrites the CJK-merged stack.
+    if cjk:
+        current_family = list(mpl.rcParams.get("font.family", []))
+        merged = list(_CJK_FAMILIES) + current_family
+        mpl.rcParams["font.family"] = merged
+        # Mirror the merge into the matching sans/serif slot so downstream
+        # font resolution honours the prepended CJK families consistently.
+        head = current_family[0].lower() if current_family else ""
+        if "times" in head or "serif" in head or "minion" in head:
+            mpl.rcParams["font.serif"] = list(_CJK_FAMILIES) + list(
+                mpl.rcParams.get("font.serif", [])
+            )
+        else:
+            mpl.rcParams["font.sans-serif"] = list(_CJK_FAMILIES) + list(
+                mpl.rcParams.get("font.sans-serif", [])
+            )
     # Unify tick widths with axes.linewidth so axes + ticks visually agree.
     ax_lw = float(mpl.rcParams.get("axes.linewidth", 0.7))
     mpl.rcParams.update(
@@ -571,6 +704,63 @@ def use_journal(name: str = "default", cjk: bool = False) -> None:
                 )
     except Exception:
         pass
+
+    # Mark the active preset so ``prepare_axes`` can skip re-applying it on
+    # every plot_* call (which would otherwise wipe user rc overrides).
+    global _ACTIVE_PRESET
+    _ACTIVE_PRESET = key
+
+
+def use_font(family, *, mathtext: str | None = None,
+             size: float | None = None) -> None:
+    """Override ``font.family`` (and optionally ``mathtext.fontset`` / ``font.size``)
+    in the current matplotlib session.
+
+    This is the user-facing escape hatch for the per-journal font defaults set
+    by :func:`use_journal`. Call it *after* :func:`use_journal` if you want a
+    specific family irrespective of the preset's house style — the change
+    survives subsequent ``plot_*`` calls because :func:`prepare_axes` does not
+    re-apply the preset once one has been installed.
+
+    Parameters
+    ----------
+    family
+        Font family name (e.g. ``"Times New Roman"``) or an iterable of names
+        forming a fallback chain.
+    mathtext
+        Optional ``mathtext.fontset`` (e.g. ``"stix"`` for serif, ``"dejavusans"``
+        for sans). If ``None`` the current mathtext fontset is kept.
+    size
+        Optional base ``font.size`` in points.
+
+    Examples
+    --------
+    >>> huitu.use_journal("nature")
+    >>> huitu.use_font("Times New Roman", mathtext="stix")
+    """
+    if isinstance(family, str):
+        fams = [family]
+        head = family
+    else:
+        fams = list(family)
+        if not fams:
+            raise ValueError("use_font: family must be non-empty")
+        head = str(fams[0])
+    mpl.rcParams["font.family"] = fams
+    head_lower = head.lower()
+    if (
+        "times" in head_lower
+        or "serif" in head_lower
+        or "minion" in head_lower
+        or "liberation serif" in head_lower
+    ):
+        mpl.rcParams["font.serif"] = fams
+    else:
+        mpl.rcParams["font.sans-serif"] = fams
+    if mathtext is not None:
+        mpl.rcParams["mathtext.fontset"] = mathtext
+    if size is not None:
+        mpl.rcParams["font.size"] = float(size)
 
 
 def use_palette(name_or_colors) -> list[str]:

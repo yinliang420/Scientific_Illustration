@@ -35,9 +35,13 @@ def plot_phase_diagram(
 
     if invariants:
         for x, T, label in invariants:
-            ax.plot(x, T, marker="o", color="black", ms=4)
+            ax.plot(x, T, marker="o", color="black", ms=4, zorder=4)
+            # Halo bbox keeps invariant labels legible even when they fall on
+            # the boundary of two phase regions.
             ax.annotate(label, xy=(x, T), xytext=(4, 4),
-                        textcoords="offset points", fontsize=6)
+                        textcoords="offset points", fontsize=6, zorder=5,
+                        bbox=dict(facecolor="white", edgecolor="none",
+                                  alpha=0.85, pad=1.0))
 
     ax.relim()
     ax.autoscale_view()

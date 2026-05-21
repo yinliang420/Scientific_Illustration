@@ -68,9 +68,21 @@ def is_multi_input(data: Any) -> bool:
 
 
 def prepare_axes(ax, journal: str):
-    """Apply journal style if no axes provided, then return (fig, ax)."""
+    """Apply journal style if no axes provided, then return (fig, ax).
+
+    Honours an already-installed preset: if the caller has run
+    ``huitu.use_journal(...)`` already and passes the same ``journal``
+    (or the default), we skip the inner ``use_journal`` call so user
+    rcParam overrides made *after* ``use_journal`` are not clobbered.
+    """
     if ax is None:
-        use_journal(journal)
+        # Re-import inside the function so the latest value of
+        # ``_ACTIVE_PRESET`` is observed (the attribute is mutated by
+        # ``use_journal`` at the very end).
+        import huitu.style as _style
+
+        if _style._ACTIVE_PRESET is None or journal != "default":
+            use_journal(journal)
         fig, ax = plt.subplots()
     else:
         fig = ax.figure
@@ -78,12 +90,19 @@ def prepare_axes(ax, journal: str):
 
 
 def _draw_regions(ax, regions, alpha: float = 0.5, edge_color: str = "black",
-                  lw: float = 0.6):
+                  lw: float = 0.6, label_position: str = "centroid"):
     """Draw labelled polygon regions on ``ax``.
 
     Each region is a dict with ``vertices`` (Nx2 iterable of ``(x, y)``),
     optional ``label`` (drawn at centroid), and optional ``color``. Used by
     Pourbaix and phase-diagram plots.
+
+    label_position
+        ``"centroid"`` — geometric centroid of the polygon (default).
+        ``"top"`` — centred horizontally at the centroid x but vertically near
+        the top edge. Pourbaix plots use this so the water-stability dashed
+        lines (which slope from y=0 down to y=-0.83 across pH) sit *below*
+        the region label rather than passing through it.
     """
     from matplotlib.patches import Polygon
 
@@ -91,12 +110,24 @@ def _draw_regions(ax, regions, alpha: float = 0.5, edge_color: str = "black",
         verts = np.asarray(region["vertices"], dtype=float)
         color = region.get("color") or f"C{i}"
         poly = Polygon(verts, closed=True, facecolor=color,
-                       edgecolor=edge_color, lw=lw, alpha=alpha)
+                       edgecolor=edge_color, lw=lw, alpha=alpha,
+                       zorder=2)
         ax.add_patch(poly)
         cx = float(np.mean(verts[:, 0]))
-        cy = float(np.mean(verts[:, 1]))
+        if label_position == "top":
+            # Anchor near the top of the polygon (a 10% inset below ymax) so
+            # diagonal water-stability lines don't slice the label bbox.
+            ymin = float(np.min(verts[:, 1]))
+            ymax = float(np.max(verts[:, 1]))
+            cy = ymax - 0.08 * max(ymax - ymin, 1e-9)
+        else:
+            cy = float(np.mean(verts[:, 1]))
+        # White halo bbox keeps the centroid label legible when water-stability
+        # dashed lines (Pourbaix) or invariant glyphs (phase diagram) cross it.
         ax.text(cx, cy, region.get("label", ""), ha="center", va="center",
-                fontsize=7)
+                fontsize=7, zorder=4,
+                bbox=dict(facecolor="white", edgecolor="none",
+                          alpha=0.85, pad=1.5))
 
 
 def place_legend(ax, labels, traces=None, legend="auto", pad_top=0.18,
