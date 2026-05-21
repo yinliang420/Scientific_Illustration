@@ -21,56 +21,108 @@ fig.savefig("panel.pdf")
 
 ## Plot catalogue
 
-> ⚠️  **Reading the table below.** The `Source` column is where the function
-> is **implemented** inside the `huitu/` package. The `Demo` column is a
-> short script (~10–30 lines) under `examples/` that shows how to *call*
-> that function. Demos do not contain plotting logic — they only import
-> from `huitu` and invoke. See [`REPO_LAYOUT.md`](REPO_LAYOUT.md) for the
-> full directory split.
+> The `Source` column is where the function is **implemented** inside the
+> `huitu/` package. There is no separate demo file per function — calling
+> conventions for every function are in its own docstring (`help(plot_xrd)`
+> or your IDE's hover) plus the inline code snippets at the end of this
+> section. See [`REPO_LAYOUT.md`](REPO_LAYOUT.md) for the full directory
+> split and [`examples/`](examples/) for the six canonical end-to-end
+> scripts (quickstart, multi-panel, BET, dQ/dV, multi-fig PDF, reviewer
+> checklist).
 
-| Plot                  | Function              | Source (where the function lives)            | Demo (how to call it)                | Notes |
-| --------------------- | --------------------- | -------------------------------------------- | ------------------------------------ | ----- |
-| XRD (single / stacked)| `plot_xrd`            | `huitu/characterization/xrd.py`              | `examples/xrd_single.py`, `xrd_stacked.py` | Optional `hkl={2theta: "(hkl)"}`; list input + `offset=` for stacks |
-| XPS + fitted peaks    | `plot_xps`            | `huitu/characterization/xps.py`              | `examples/xps_fitting.py`            | `baseline=(x,y)`, `fits=[(x,y,label), …]` |
-| Raman                 | `plot_raman`          | `huitu/characterization/raman.py`            | `examples/raman.py`                  | List input for multi-spectrum stacking |
-| FTIR                  | `plot_ftir`           | `huitu/characterization/ftir.py`             | `examples/ftir.py`                   | Reversed x-axis; `mode='transmittance'\|'absorbance'` |
-| UV-Vis / Tauc         | `plot_uvvis`          | `huitu/characterization/uvvis.py`            | `examples/uvvis.py`                  | `tauc='direct'\|'indirect'` switches x to photon energy |
-| PL                    | `plot_pl`             | `huitu/characterization/pl.py`               | `examples/pl.py`                     | Multi-spectrum + `normalize=True` |
-| TGA / DSC             | `plot_thermal`        | `huitu/characterization/thermal.py`          | `examples/thermal.py`                | `mode='tga'\|'dsc'\|'both'`; `mode='both'` needs `dsc_data=` |
-| Rietveld              | `plot_rietveld`       | `huitu/characterization/rietveld.py`         | `examples/rietveld.py`               | 2-panel main + residual; `hkl_positions=[...]` |
-| Operando (v0.3)       | `plot_operando`       | `huitu/characterization/operando.py`         | _(see `plot_operando_*` v0.4 family)_| Traditional in-situ heatmap |
-| **BET isotherm** ✨ v0.6 | `plot_bet`         | `huitu/characterization/bet.py`              | `examples/bet.py`                    | 2-panel: isotherm + BET linear plot; auto V_m + S_BET annotation |
-| CV                    | `plot_cv`             | `huitu/electrochem/cv.py`                    | `examples/cv.py`                     | Multi-cycle overlay via list input |
-| GCD                   | `plot_gcd`            | `huitu/electrochem/gcd.py`                   | `examples/gcd.py`                    | Multi-rate overlay |
-| Cycling + CE          | `plot_cycle`          | `huitu/electrochem/cycle.py`                 | `examples/cycle.py`                  | 3-column input → twin-Y (capacity, CE) |
-| EIS (Nyquist)         | `plot_eis`            | `huitu/electrochem/eis.py`                   | `examples/eis.py`                    | Equal-aspect; list input |
-| Bode                  | `plot_bode`           | `huitu/electrochem/bode.py`                  | `examples/bode.py`                   | Log freq x; twin y (\|Z\|, phase) |
-| Tafel                 | `plot_tafel`          | `huitu/electrochem/tafel.py`                 | `examples/tafel.py`                  | Optional `fit_range=(η_min, η_max)` |
-| **dQ/dV** ✨ v0.6     | `plot_dqdv`           | `huitu/electrochem/dqdv.py`                  | `examples/dqdv.py`                   | Differential capacity from GCD; optional Savitzky–Golay smoothing |
-| Band structure        | `plot_band`           | `huitu/computational/band.py`                | `examples/band.py`                   | Fermi at 0; `kpoints=[(label, pos), …]`; **v0.6**: also accepts pymatgen `BSVasprun` / `BandStructureSymmLine` |
-| DOS / PDOS            | `plot_dos`            | `huitu/computational/dos.py`                 | `examples/dos.py`                    | `orientation='horizontal'\|'vertical'` |
-| COHP / ICOHP          | `plot_cohp`           | `huitu/computational/cohp.py`                | `examples/cohp.py`                   | Bonding fill left of 0; `show_icohp=True` adds twin x |
-| Pourbaix              | `plot_pourbaix`       | `huitu/computational/pourbaix.py`            | `examples/pourbaix.py`               | Region dict + H₂/O₂ stability lines |
-| Phase diagram         | `plot_phase_diagram`  | `huitu/computational/phase_diagram.py`       | `examples/phase_diagram.py`          | Same region-dict API; `invariants=[(x, T, label)]` |
-| Crystal (ASE)         | `plot_crystal_ase`    | `huitu/computational/crystal.py`             | `examples/crystal_ase.py`            | 3 orthogonal views; needs `pip install 'huitu[crystal]'` |
-| Crystal (VESTA)       | `plot_crystal_vesta`  | `huitu/computational/crystal.py`             | `examples/crystal_vesta.py`          | Dispatcher: `VESTA_BIN` env var else ASE fallback |
-| Bar (grouped/stacked) | `plot_bar`            | `huitu/general/bar.py`                       | `examples/bar.py`                    | `stacked=True` toggles mode |
-| Scatter + fit         | `plot_scatter`        | `huitu/general/scatter.py`                   | `examples/scatter.py`                | `fit=True`, `yerr=…` |
-| Line (twin Y)         | `plot_line`           | `huitu/general/line.py`                      | `examples/line.py`                   | `twin_cols=[…]` |
-| Heatmap               | `plot_heatmap`        | `huitu/general/heatmap.py`                   | `examples/heatmap.py`                | `mode='heatmap'\|'contour'\|'contourf'`, `annot=True` |
-| Box / Violin          | `plot_box_violin`     | `huitu/general/box_violin.py`                | `examples/box_violin.py`             | `kind='box'\|'violin'`, long-format via `x=/y=` |
-| Radar / spider        | `plot_radar`          | `huitu/general/radar.py`                     | `examples/radar.py`                  | `normalize='per_axis'\|'global'\|None` |
-| Density (2-D KDE)     | `plot_density`        | `huitu/general/density.py`                   | _(no dedicated demo)_                | 2-D kernel density on (x, y) |
-| SHAP-like importance  | `plot_shap`           | `huitu/general/shap_like.py`                 | _(no dedicated demo)_                | Bee-swarm style feature importance |
-| Subplot factory       | `make_subplots`       | `huitu/layout/subplots.py`                   | `examples/subplots_demo.py`          | Auto (a)(b)(c) panel labels |
-| Zoom inset            | `add_inset`           | `huitu/layout/inset.py`                      | `examples/inset_demo.py`             | Dashed connector rectangle |
-| Shared axes           | `share_axes`          | `huitu/layout/shared_axes.py`                | `examples/shared_axes_demo.py`       | Post-hoc link limits + remove inner ticks |
-| **Multi-fig PDF** ✨ v0.6 | `make_pdf_report` | `huitu/layout/pdf_report.py`                 | `examples/pdf_report.py`             | Compose any list of figures into a multi-page PDF; optional cover page + per-page captions |
+| Plot                  | Function              | Source                                       | Notes |
+| --------------------- | --------------------- | -------------------------------------------- | ----- |
+| XRD (single / stacked)| `plot_xrd`            | `huitu/characterization/xrd.py`              | Optional `hkl={2theta: "(hkl)"}`; list input + `offset=` for stacks |
+| XPS + fitted peaks    | `plot_xps`            | `huitu/characterization/xps.py`              | `baseline=(x,y)`, `fits=[(x,y,label), …]` |
+| Raman                 | `plot_raman`          | `huitu/characterization/raman.py`            | List input for multi-spectrum stacking |
+| FTIR                  | `plot_ftir`           | `huitu/characterization/ftir.py`             | Reversed x-axis; `mode='transmittance'\|'absorbance'` |
+| UV-Vis / Tauc         | `plot_uvvis`          | `huitu/characterization/uvvis.py`            | `tauc='direct'\|'indirect'` switches x to photon energy |
+| PL                    | `plot_pl`             | `huitu/characterization/pl.py`               | Multi-spectrum + `normalize=True` |
+| TGA / DSC             | `plot_thermal`        | `huitu/characterization/thermal.py`          | `mode='tga'\|'dsc'\|'both'`; `mode='both'` needs `dsc_data=` |
+| Rietveld              | `plot_rietveld`       | `huitu/characterization/rietveld.py`         | 2-panel main + residual; `hkl_positions=[...]` |
+| Operando (v0.3)       | `plot_operando`       | `huitu/characterization/operando.py`         | Traditional in-situ heatmap |
+| **BET isotherm** ✨ v0.6 | `plot_bet`         | `huitu/characterization/bet.py`              | 2-panel: isotherm + BET linear plot; auto V_m + S_BET annotation |
+| CV                    | `plot_cv`             | `huitu/electrochem/cv.py`                    | Multi-cycle overlay via list input |
+| GCD                   | `plot_gcd`            | `huitu/electrochem/gcd.py`                   | Multi-rate overlay |
+| Cycling + CE          | `plot_cycle`          | `huitu/electrochem/cycle.py`                 | 3-column input → twin-Y (capacity, CE) |
+| EIS (Nyquist)         | `plot_eis`            | `huitu/electrochem/eis.py`                   | Equal-aspect; list input |
+| Bode                  | `plot_bode`           | `huitu/electrochem/bode.py`                  | Log freq x; twin y (\|Z\|, phase) |
+| Tafel                 | `plot_tafel`          | `huitu/electrochem/tafel.py`                 | Optional `fit_range=(η_min, η_max)` |
+| **dQ/dV** ✨ v0.6     | `plot_dqdv`           | `huitu/electrochem/dqdv.py`                  | Differential capacity from GCD; optional Savitzky–Golay smoothing |
+| Band structure        | `plot_band`           | `huitu/computational/band.py`                | Fermi at 0; `kpoints=[(label, pos), …]`; **v0.6**: also accepts pymatgen `BSVasprun` / `BandStructureSymmLine` |
+| DOS / PDOS            | `plot_dos`            | `huitu/computational/dos.py`                 | `orientation='horizontal'\|'vertical'` |
+| COHP / ICOHP          | `plot_cohp`           | `huitu/computational/cohp.py`                | Bonding fill left of 0; `show_icohp=True` adds twin x |
+| Pourbaix              | `plot_pourbaix`       | `huitu/computational/pourbaix.py`            | Region dict + H₂/O₂ stability lines |
+| Phase diagram         | `plot_phase_diagram`  | `huitu/computational/phase_diagram.py`       | Same region-dict API; `invariants=[(x, T, label)]` |
+| Crystal (ASE)         | `plot_crystal_ase`    | `huitu/computational/crystal.py`             | 3 orthogonal views; needs `pip install 'huitu[crystal]'` |
+| Crystal (VESTA)       | `plot_crystal_vesta`  | `huitu/computational/crystal.py`             | Dispatcher: `VESTA_BIN` env var else ASE fallback |
+| Bar (grouped/stacked) | `plot_bar`            | `huitu/general/bar.py`                       | `stacked=True` toggles mode |
+| Scatter + fit         | `plot_scatter`        | `huitu/general/scatter.py`                   | `fit=True`, `yerr=…` |
+| Line (twin Y)         | `plot_line`           | `huitu/general/line.py`                      | `twin_cols=[…]` |
+| Heatmap               | `plot_heatmap`        | `huitu/general/heatmap.py`                   | `mode='heatmap'\|'contour'\|'contourf'`, `annot=True` |
+| Box / Violin          | `plot_box_violin`     | `huitu/general/box_violin.py`                | `kind='box'\|'violin'`, long-format via `x=/y=` |
+| Radar / spider        | `plot_radar`          | `huitu/general/radar.py`                     | `normalize='per_axis'\|'global'\|None` |
+| Density (2-D KDE)     | `plot_density`        | `huitu/general/density.py`                   | 2-D kernel density on (x, y) |
+| SHAP-like importance  | `plot_shap`           | `huitu/general/shap_like.py`                 | Bee-swarm style feature importance |
+| Subplot factory       | `make_subplots`       | `huitu/layout/subplots.py`                   | Auto (a)(b)(c) panel labels |
+| Zoom inset            | `add_inset`           | `huitu/layout/inset.py`                      | Dashed connector rectangle |
+| Shared axes           | `share_axes`          | `huitu/layout/shared_axes.py`                | Post-hoc link limits + remove inner ticks |
+| **Multi-fig PDF** ✨ v0.6 | `make_pdf_report` | `huitu/layout/pdf_report.py`                 | Compose any list of figures into a multi-page PDF; optional cover page + per-page captions |
 
 Advanced (v0.4) families — statistical / comparison / operando — and the v0.5
 archetype + role + review APIs live under `huitu/pro/*.py`, `huitu/archetype.py`,
 `huitu/review.py`. See `huitu/__init__.py` for the complete export list (44 plot
 functions + 4 archetypes + role + check_redundancy + reviewer_checklist).
+
+## Inline quickstart snippets
+
+```python
+# 1. Single plot, journal preset, save — replace plot_xrd with any plot_*.
+import huitu
+fig, ax = huitu.plot_xrd("xrd.txt", journal="nature", save="fig1.svg")
+```
+
+```python
+# 2. Multi-panel via archetype + role-based palette.
+fig, ax = huitu.archetype.schematic_led(journal="nature", n_supports=3)
+ax["hero"].imshow(mechanism_cartoon)
+huitu.plot_xrd  ("xrd.txt",  ax=ax["supports"][0])
+huitu.plot_cv   ("cv.txt",   ax=ax["supports"][1], color=huitu.role("hero"))
+huitu.plot_eis  ("eis.txt",  ax=ax["supports"][2])
+fig.savefig("fig1.svg")   # editable text in Illustrator
+```
+
+```python
+# 3. BET isotherm (two-panel) — returns (fig, axes, metrics)
+fig, (ax_iso, ax_lin), m = huitu.plot_bet((p_rel, v_ads), journal="nature")
+print(f"S_BET = {m['S_BET']:.1f} m² g⁻¹  ·  V_m = {m['V_m']:.2f} cm³ g⁻¹")
+```
+
+```python
+# 4. dQ/dV (multi-cycle ageing overlay)
+huitu.plot_dqdv([cycle_1, cycle_50], labels=["cycle 1", "cycle 50"])
+```
+
+```python
+# 5. Multi-figure PDF report — bundle every panel into one shareable file
+huitu.make_pdf_report(
+    [fig_xrd, fig_cv, fig_eis, fig_gcd],
+    save="reports/sample_2026-05.pdf",
+    title="MnO₂-Cu sample — May 2026",
+    metadata=["operator = YL", "date = 2026-05-21"],
+    captions=["Fig 1. XRD", "Fig 2. CV", "Fig 3. EIS", "Fig 4. GCD"],
+)
+```
+
+```python
+# 6. Pre-submission self-check (anti-redundancy + reviewer checklist)
+huitu.print_redundancy_report(panel_plan)
+huitu.reviewer_checklist(figure=..., quantitative=..., image=...)
+```
+
+The runnable versions of these six snippets live as `examples/quickstart.py`,
+`examples/multi_panel.py`, `examples/bet.py`, `examples/dqdv.py`,
+`examples/pdf_report.py`, `examples/reviewer_checklist.py`.
 
 ## Journal presets
 
@@ -130,7 +182,7 @@ plot_cycle("cycle.txt", journal="nature", save="cycle.pdf")
 
 When you need custom colours, annotations, extra axes, or mixed panels:
 
-1. Copy the closest `examples/*.py` next to your data.
+1. Copy the closest of the six canonical `examples/*.py` next to your data, or grab a snippet from the "Inline quickstart snippets" section above.
 2. Edit freely — every plot returns `(fig, ax)` so you still own the Matplotlib object.
 
 ```python
@@ -178,59 +230,6 @@ fig.savefig("custom.pdf")
 - **Bar / line / scatter**: CSV with a header row; first column = category or x-axis, remaining columns = series.
 
 Pre-generated synthetic samples live under `examples/sample_data/` (regenerate with `python examples/sample_data/_generate.py`).
-
-## Bundled reference demos (`docs/inspirations/figures4papers/`)
-
-`huitu` ships a read-only snapshot of nine real-paper plotting scripts from
-[`Yuan1z0825/nature-skills`](https://github.com/Yuan1z0825/nature-skills) /
-[`ChenLiu-1996/figures4papers`](https://github.com/ChenLiu-1996/figures4papers).
-These are **reference cookbooks**, not part of huitu's import surface.
-Use them as visual examples for `plot_*` and `archetype.*` patterns. Each
-project sits in its own folder and is intended to be run from that folder:
-
-```bash
-cd docs/inspirations/figures4papers/figure_ImmunoStruct/
-python plot_bars.py    # PNG lands in figures/ (gitignored)
-```
-
-### Demo prerequisites — different demos need different data sources
-
-Before running or pointing a user at a specific demo, check this table.
-Six demos run out of the box on `matplotlib + numpy` only; three need
-extra setup. If a user only has `matplotlib + numpy + pandas` installed,
-prefer the green ones.
-
-| Project | Runs out of the box? | Extra requirement |
-|---|---|---|
-| `figure_CellSpliceNet`   | ✅ | — |
-| `figure_Cflows`          | ✅ | — |
-| `figure_Dispersion`      | ✅ for `plot_idea.py` · ⚠️ `plot_illustration.py` needs LaTeX | `text.usetex=True` |
-| `figure_ImmunoStruct`    | ✅ | — (data is inlined in `raw_data.py`) |
-| `figure_VIGIL`           | ✅ | — |
-| `figure_brainteaser`     | ✅ | — |
-| `figure_FPGM`            | ❌ | **External data**: needs `./data/` directory with project-specific `.npy` / `.pt` files (not shipped — upstream omits it too). User must provide their own dataset before running. |
-| `figure_RNAGenScape`     | ❌ | **LaTeX**: scripts set `plt.rcParams['text.usetex'] = True` and use real LaTeX in axis labels. Install MacTeX (macOS) / TeX Live (Linux/Windows) or patch the scripts to set `usetex=False`. |
-| `figure_ophthal_review`  | ❌ | **LaTeX + seaborn**: same `usetex=True` requirement; also `import seaborn as sns`. Install `seaborn` via pip plus a TeX distribution. |
-
-### When pointing a user at a demo
-
-1. **First check the table above** — confirm the demo doesn't need a data
-   source or environment the user lacks.
-2. **If the user needs a chart like one of the LaTeX-dependent demos** but
-   doesn't have LaTeX, suggest patching the script: replace
-   `plt.rcParams['text.usetex'] = True` with `False`, or remove
-   LaTeX-flavored math (`$\\frac{a}{b}$` → `a / b`) before running.
-3. **If the user needs `figure_FPGM`**, ask whether they already have the
-   pre-trained frequency-prior tensors they want to plot; without those,
-   the script can't produce a meaningful figure regardless of environment.
-4. **Never silently swallow these failures** — if a demo doesn't run, tell
-   the user *which* missing dependency is the cause (data dir / LaTeX /
-   seaborn) and what to do about it.
-
-The chart-family routing table in
-[`docs/inspirations/README.md`](docs/inspirations/README.md) maps each demo
-to the closest huitu function, so for most use-cases you can read the demo
-for pattern reference without actually executing it.
 
 ## Extension roadmap
 

@@ -2,7 +2,7 @@ include README.md
 include LICENSE
 include CHANGELOG.md
 include SKILL.md
-include USAGE.md
+include REPO_LAYOUT.md
 include pyproject.toml
 
 recursive-include huitu *.py py.typed
@@ -10,7 +10,8 @@ recursive-include huitu *.py py.typed
 # Exclude developer / test artefacts from sdist.
 prune examples
 prune tests
-prune real_data_test
+prune docs
+prune reports
 prune .pytest_cache
 prune huitu.egg-info
 global-exclude __pycache__
