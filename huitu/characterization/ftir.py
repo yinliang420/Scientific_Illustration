@@ -51,7 +51,7 @@ def plot_ftir(
         (line,) = ax.plot(x, yshift, label=labels[i], **kwargs)
         traces.append((x, yshift, line.get_color()))
 
-    ax.set_xlabel("Wavenumber (cm⁻¹)")
+    ax.set_xlabel(r"Wavenumber (cm$^{-1}$)")
     ax.set_ylabel("Transmittance (%)" if mode == "transmittance" else "Absorbance (a.u.)")
     ax.invert_xaxis()
 

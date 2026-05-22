@@ -41,8 +41,8 @@ def plot_box_violin(
     kind: str = "box",
     x: str | None = None,
     y: str | None = None,
-    xlabel: str = "",
-    ylabel: str = "Value",
+    xlabel: str | None = None,
+    ylabel: str | None = None,
     **kwargs,
 ):
     """Box or violin plot. ``kind='box'|'violin'``.
@@ -69,8 +69,14 @@ def plot_box_violin(
 
     ax.set_xticks(positions)
     ax.set_xticklabels(labels)
-    ax.set_xlabel(xlabel or (x or ""))
-    ax.set_ylabel(ylabel if ylabel != "Value" else (y or ylabel))
+    # Fall back to long-format column name (`x=` / `y=`) when caller didn't
+    # pass an explicit label; otherwise leave the axis silently unlabelled.
+    xl = xlabel if xlabel is not None else x
+    yl = ylabel if ylabel is not None else y
+    if xl:
+        ax.set_xlabel(xl)
+    if yl:
+        ax.set_ylabel(yl)
 
     finalize(fig, save)
     return fig, ax

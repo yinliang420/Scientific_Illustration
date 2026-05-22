@@ -32,8 +32,8 @@ def plot_bar(
     save=None,
     stacked: bool = False,
     width: float = 0.8,
-    xlabel: str = "",
-    ylabel: str = "Value",
+    xlabel: str | None = None,
+    ylabel: str | None = None,
     **kwargs,
 ):
     """Plot grouped (default) or stacked bars from a DataFrame.
@@ -65,8 +65,10 @@ def plot_bar(
 
     ax.set_xticks(x)
     ax.set_xticklabels(categories)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    if xlabel is not None:
+        ax.set_xlabel(xlabel)
+    if ylabel is not None:
+        ax.set_ylabel(ylabel)
     ax.legend(loc="best")
 
     finalize(fig, save)
