@@ -178,7 +178,7 @@ def plot_bet(
                     markersize=3.5, mfc="white",
                     label=f"{iso_label} (desorption)")
     ax_iso.set_xlabel(r"$P/P_0$")
-    ax_iso.set_ylabel(r"$V_{ads}$ (cm³ STP g⁻¹)")
+    ax_iso.set_ylabel(r"$V_{ads}$ (cm$^{3}$ STP g$^{-1}$)")
     ax_iso.set_xlim(0, 1)
     ax_iso.set_ylim(bottom=0)
     if v_des is not None or label:
@@ -197,15 +197,15 @@ def plot_bet(
     ax_lin.plot(x_line, y_line, color=role("neutral_dark"), lw=1.0, ls="--",
                 label=f"y = {slope:.3g}x + {intercept:.3g}")
     ax_lin.set_xlabel(r"$P/P_0$")
-    ax_lin.set_ylabel(r"$1 / [V_{ads}(P_0/P - 1)]$  (g cm⁻³)")
+    ax_lin.set_ylabel(r"$1 / [V_{ads}(P_0/P - 1)]$  (g cm$^{-3}$)")
     ax_lin.set_title("BET linear plot", fontsize=8, pad=4)
     ax_lin.legend(loc="upper left", fontsize=6.5, frameon=False)
 
     if annotate:
         if np.isfinite(s_bet):
             annotation = (
-                f"$V_m$ = {v_m:.2f} cm³ g⁻¹\n"
-                f"$S_{{BET}}$ = {s_bet:.1f} m² g⁻¹\n"
+                f"$V_m$ = {v_m:.2f} cm$^{{3}}$ g$^{{-1}}$\n"
+                f"$S_{{BET}}$ = {s_bet:.1f} m$^{{2}}$ g$^{{-1}}$\n"
                 f"$C$ = {c_const:.1f}\n"
                 f"$R^2$ = {r2:.4f}"
             )

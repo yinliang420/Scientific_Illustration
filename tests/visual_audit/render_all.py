@@ -180,13 +180,22 @@ def gen_general() -> None:
     cat = "04_general"
     huitu.use_journal("nature")
 
-    fig, ax = huitu.plot_bar(str(SAMPLE / "bar.csv"))
+    fig, ax = huitu.plot_bar(
+        str(SAMPLE / "bar.csv"),
+        xlabel="Sample", ylabel=r"Capacity (mAh g$^{-1}$)",
+    )
     _save(fig, cat, "plot_bar")
 
-    fig, ax = huitu.plot_scatter(str(SAMPLE / "scatter.csv"), fit=True)
+    fig, ax = huitu.plot_scatter(
+        str(SAMPLE / "scatter.csv"), fit=True,
+        xlabel="Predicted (eV)", ylabel="Measured (eV)",
+    )
     _save(fig, cat, "plot_scatter")
 
-    fig, ax = huitu.plot_line(str(SAMPLE / "line.csv"))
+    fig, ax = huitu.plot_line(
+        str(SAMPLE / "line.csv"),
+        xlabel="Time (s)", ylabel="Signal (a.u.)",
+    )
     _save(fig, cat, "plot_line")
 
     rng = np.random.default_rng(40)
@@ -196,7 +205,10 @@ def gen_general() -> None:
     )
     _save(fig, cat, "plot_heatmap")
 
-    fig, ax = huitu.plot_box_violin(str(SAMPLE / "boxviolin.csv"), kind="box")
+    fig, ax = huitu.plot_box_violin(
+        str(SAMPLE / "boxviolin.csv"), kind="box",
+        xlabel="Group", ylabel="Score",
+    )
     _save(fig, cat, "plot_box_violin")
 
     fig, ax = huitu.plot_radar(str(SAMPLE / "radar.csv"))
@@ -204,7 +216,9 @@ def gen_general() -> None:
 
     x = rng.normal(0, 1, 600)
     y = x * 0.5 + rng.normal(0, 0.8, 600)
-    fig, ax = huitu.plot_density(x, y)
+    fig, ax = huitu.plot_density(
+        x, y, xlabel="Feature 1", ylabel="Feature 2"
+    )
     _save(fig, cat, "plot_density")
 
     shap_vals = rng.normal(0, 1, size=(40, 7))
@@ -232,6 +246,7 @@ def gen_advanced() -> None:
         categories=["A", "B", "C", "D", "E"],
         start=[0.62, 0.71, 0.80, 0.74, 0.68],
         end=[0.78, 0.82, 0.88, 0.83, 0.77],
+        xlabel="Accuracy",
     )
     _save(fig, cat, "plot_dumbbell")
 
@@ -239,6 +254,7 @@ def gen_advanced() -> None:
         {"A": [0.62, 0.78], "B": [0.71, 0.82], "C": [0.80, 0.88],
          "D": [0.74, 0.83], "E": [0.68, 0.77]},
         x_labels=["before", "after"],
+        ylabel="Accuracy",
     )
     _save(fig, cat, "plot_slope")
 
@@ -263,13 +279,17 @@ def gen_advanced() -> None:
 
     x_stream = np.arange(12)
     stream_data = {ch: list(rng.uniform(0.5, 1.5, 12)) for ch in ["w","x","y","z"]}
-    fig, ax = huitu.plot_streamgraph(x_stream, stream_data)
+    fig, ax = huitu.plot_streamgraph(
+        x_stream, stream_data,
+        xlabel="Month", ylabel="Composition (a.u.)",
+    )
     _save(fig, cat, "plot_streamgraph")
 
     t = np.linspace(0, 2 * np.pi, 30)
     fig, ax = huitu.plot_connected_scatter(
         x=np.cos(t) + rng.normal(0, 0.05, 30),
         y=np.sin(t) + rng.normal(0, 0.05, 30),
+        xlabel="PC1", ylabel="PC2",
     )
     _save(fig, cat, "plot_connected_scatter")
 
@@ -309,7 +329,10 @@ def gen_operando() -> None:
     )
     _save(fig, cat, "plot_operando_xrd_echem")
 
-    fig, ax = huitu.plot_operando_3d_surface(d["Z"], x=d["x"], y=d["y"])
+    fig, ax = huitu.plot_operando_3d_surface(
+        d["Z"], x=d["x"], y=d["y"],
+        xlabel=r"2$\theta$ (°)", ylabel="time (h)", zlabel="Intensity (a.u.)",
+    )
     _save(fig, cat, "plot_operando_3d_surface")
 
     fig, ax = huitu.plot_operando_diffmap(d["Z"], x=d["x"], y=d["y"], reference=0,

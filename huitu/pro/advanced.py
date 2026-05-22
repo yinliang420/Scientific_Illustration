@@ -239,6 +239,8 @@ def plot_streamgraph(
     palette: str = "met-monet",
     baseline: str = "wiggle",
     alpha: float = 0.9,
+    xlabel: str | None = None,
+    ylabel: str | None = None,
     **kwargs,
 ):
     """Streamgraph (stacked area with a balanced baseline).
@@ -288,6 +290,12 @@ def plot_streamgraph(
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
     ax.tick_params(which="both", left=False, top=False, right=False)
+    if xlabel is not None:
+        ax.set_xlabel(xlabel)
+    if ylabel is not None:
+        # The y-axis ticks are hidden by design (stacked layers), but a
+        # ylabel can still convey what "thickness" means.
+        ax.set_ylabel(ylabel)
     ax.legend(frameon=False, fontsize=7, loc="upper left",
               bbox_to_anchor=(1.01, 1.0))
 

@@ -18,8 +18,8 @@ def plot_scatter(
     yerr=None,
     xerr=None,
     fit: bool = False,
-    xlabel: str = "x",
-    ylabel: str = "y",
+    xlabel: str | None = None,
+    ylabel: str | None = None,
     label: str | None = None,
     **kwargs,
 ):
@@ -75,8 +75,10 @@ def plot_scatter(
                 ax.fill_between(xs, y_fit - 1.96 * se, y_fit + 1.96 * se,
                                 alpha=0.2, color=fit_color, linewidth=0)
 
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    if xlabel is not None:
+        ax.set_xlabel(xlabel)
+    if ylabel is not None:
+        ax.set_ylabel(ylabel)
     if label or fit:
         ax.legend(loc="best")
 
