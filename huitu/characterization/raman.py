@@ -67,7 +67,7 @@ def plot_raman(
         (line,) = ax.plot(x, yshift, label=labels[i], **kwargs)
         traces.append((x, yshift, line.get_color()))
 
-    ax.set_xlabel("Raman shift (cm⁻¹)")
+    ax.set_xlabel(r"Raman shift (cm$^{-1}$)")
     ax.set_ylabel("Intensity (a.u.)")
     ax.set_yticks([])
     ax.margins(y=0.08)

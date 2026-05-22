@@ -35,7 +35,7 @@ def plot_tafel(
     style = dict(marker="o", markersize=3, linestyle="none")
     style.update(kwargs)
     ax.plot(x, y, label=label, **style)
-    ax.set_xlabel("log |j| (A cm⁻²)")
+    ax.set_xlabel(r"log |j| (A cm$^{-2}$)")
     ax.set_ylabel(r"$\eta$ (V vs RHE)")
 
     # Build mask: respect explicit window; otherwise use all points.

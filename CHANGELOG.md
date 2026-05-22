@@ -2,6 +2,49 @@
 
 All notable changes to **huitu** are recorded here.
 
+## [0.6.3] — 2026-05-22
+
+Round-6 axis-label 查缺补漏 pass. An audit subagent walked every public
+`plot_*` helper and categorised the xlabel/ylabel/zlabel/cbar_label state.
+24 domain-specific helpers already had correct hardcoded labels; 4 generic
+helpers had placeholder defaults that forced callers to override, and 5
+labels mixed unicode super/subscripts (`cm⁻¹`) with the codebase's mathtext
+convention (`cm$^{-1}$`). All are resolved here.
+
+### Breaking (cosmetic)
+
+- **`plot_bar`, `plot_scatter`, `plot_box_violin`** no longer render
+  placeholder axis labels by default. Old defaults `xlabel="x"` /
+  `ylabel="y"` / `ylabel="Value"` are replaced with `None` — callers must
+  pass explicit labels (recommended) or the axis stays silently
+  unlabelled. `plot_box_violin` additionally falls back to the
+  long-format `x=` / `y=` column name when no explicit label is supplied.
+
+### Added
+
+- **`plot_streamgraph` gains `xlabel` / `ylabel` kwargs.** Previously the
+  function had no way to label its time axis without post-hoc
+  `ax.set_xlabel(...)`. Setting `ylabel` does not re-show the hidden left
+  spine (the spine stays detached from label rendering by design).
+
+### Fixed
+
+- **Unicode → mathtext consistency.** `plot_raman` / `plot_ftir` / `plot_bet`
+  / `plot_tafel` axis labels and BET annotations now use mathtext
+  `cm$^{-1}$`, `cm$^{-2}$`, `cm$^{3}$ g$^{-1}$`, `m$^{2}$ g$^{-1}$` etc.
+  Unicode `cm⁻¹` / `cm⁻²` characters renders inconsistently across the
+  Helvetica / Times Roman / STIX fonts used by huitu's 8 journal presets;
+  mathtext renders identically everywhere.
+
+### Visual audit harness
+
+- `tests/visual_audit/render_all.py` now passes proper `xlabel`/`ylabel`
+  on every generic-plotter demo (bar: Sample/Capacity; scatter: Predicted/
+  Measured (eV); line: Time/Signal; box_violin: Group/Score; density:
+  Feature 1/2; dumbbell: Accuracy; slope: Accuracy; streamgraph: Month/
+  Composition; connected_scatter: PC1/PC2; 3d_surface: full xyz) so the
+  audit PNGs all read as publication-ready demos.
+
 ## [0.6.2] — 2026-05-21
 
 Round-5 visual-audit release. A new 52-figure harness (one PNG per huitu
