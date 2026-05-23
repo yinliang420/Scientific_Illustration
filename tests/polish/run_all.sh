@@ -13,9 +13,9 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-PYTHON="${PYTHON:-/Users/ylll/miniconda3/bin/python}"
+PYTHON="${PYTHON:-python}"
 if ! command -v "${PYTHON}" >/dev/null 2>&1; then
-    PYTHON="python"
+    PYTHON="python3"
 fi
 
 cd "${REPO_ROOT}"
