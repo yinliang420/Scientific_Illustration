@@ -39,55 +39,77 @@ HD_DPI = 300
 
 def _draw_hero_schematic(ax) -> None:
     """Three-stage Pristine → Activated → Cycled mechanism cartoon."""
-    ax.set_xlim(0, 10); ax.set_ylim(0, 4); ax.set_axis_off()
+    ax.set_xlim(0, 10); ax.set_ylim(0, 4.4); ax.set_axis_off()
+    # Soft tinted backdrop to separate hero from supports visually.
+    ax.add_patch(mpatches.Rectangle(
+        (0.1, 0.2), 9.8, 4.0,
+        facecolor="#FAFBFC", edgecolor="#E5E8EC", linewidth=0.6, zorder=0,
+    ))
     stages = [
-        ("Pristine",  huitu.role("baseline_soft"), 1.5),
-        ("Activated", huitu.role("hero_soft"),     5.0),
-        ("Cycled",    huitu.role("hero"),          8.5),
+        ("Pristine",  huitu.role("baseline_soft"), 1.6, "Layered MnO$_2$"),
+        ("Activated", huitu.role("hero_soft"),     5.0, "Cu-doped, opened"),
+        ("Cycled",    huitu.role("hero"),          8.4, "Stable @ 500 cyc."),
     ]
-    for label, color, cx in stages:
+    for label, color, cx, sub in stages:
         rect = mpatches.FancyBboxPatch(
-            (cx - 0.9, 0.8), 1.8, 2.4,
-            boxstyle="round,pad=0.06,rounding_size=0.20",
-            linewidth=1.0, edgecolor=huitu.role("neutral_dark"),
-            facecolor=color, alpha=0.88,
+            (cx - 1.05, 1.05), 2.1, 1.95,
+            boxstyle="round,pad=0.05,rounding_size=0.22",
+            linewidth=1.1, edgecolor=huitu.role("neutral_dark"),
+            facecolor=color, alpha=0.92, zorder=2,
         )
         ax.add_patch(rect)
         text_color = "white" if color == huitu.role("hero") else huitu.role("neutral_dark")
-        ax.text(cx, 2.0, label, ha="center", va="center",
-                fontsize=11, fontweight="bold", color=text_color)
-    for x_from, x_to in [(2.4, 4.1), (5.9, 7.6)]:
+        ax.text(cx, 2.30, label, ha="center", va="center",
+                fontsize=12, fontweight="bold", color=text_color, zorder=3)
+        ax.text(cx, 1.50, sub, ha="center", va="center",
+                fontsize=8, color=text_color, zorder=3, alpha=0.92)
+    # Stage transition arrows with verb labels above.
+    for (x_from, x_to), verb in [((2.75, 3.85), "activate"),
+                                  ((6.15, 7.25), "cycle")]:
         ax.annotate("", xy=(x_to, 2.0), xytext=(x_from, 2.0),
-                    arrowprops=dict(arrowstyle="->", lw=1.4,
-                                    color=huitu.role("neutral_dark")))
-    ax.text(5.0, 3.6,
-            "Design: capacity gained without changing payload identity",
-            ha="center", va="center", fontsize=9,
+                    arrowprops=dict(arrowstyle="-|>", lw=1.6,
+                                    color=huitu.role("neutral_dark"),
+                                    mutation_scale=14), zorder=3)
+        ax.text((x_from + x_to) / 2, 2.35, verb,
+                ha="center", va="bottom", fontsize=8, style="italic",
+                color=huitu.role("neutral_dark"), zorder=3)
+    ax.text(5.0, 3.85,
+            "Capacity gained without changing payload identity",
+            ha="center", va="center", fontsize=10, fontweight="bold",
             color=huitu.role("neutral_dark"))
 
 
 def render_archetype() -> None:
-    fig, ax = huitu.archetype.schematic_led(journal="default", n_supports=4)
+    # Slightly taller figure so 4 supports get more room each.
+    fig, ax = huitu.archetype.schematic_led(
+        journal="default", n_supports=4, figsize=(8.4, 6.6),
+    )
     _draw_hero_schematic(ax["hero"])
-    huitu.plot_xrd  (str(SAMPLE / "xrd.txt"), ax=ax["supports"][0])
-    ax["supports"][0].set_title("XRD", fontsize=8, pad=4)
-    huitu.plot_cv   (str(SAMPLE / "cv.txt"),  ax=ax["supports"][1])
-    ax["supports"][1].set_title("CV", fontsize=8, pad=4)
-    huitu.plot_eis  (str(SAMPLE / "eis.txt"), ax=ax["supports"][2])
-    ax["supports"][2].set_title("EIS", fontsize=8, pad=4)
+    # No subplot titles — axis labels already tell the reader what each
+    # support is. Panel letters (b/c/d/e) at the corner are sufficient.
+    huitu.plot_xrd(str(SAMPLE / "xrd.txt"), ax=ax["supports"][0])
+    huitu.plot_cv (str(SAMPLE / "cv.txt"),  ax=ax["supports"][1])
+    huitu.plot_eis(str(SAMPLE / "eis.txt"), ax=ax["supports"][2])
     # 4th support — role-themed capacity-by-stage bar.
     sup3 = ax["supports"][3]
     sup3.bar([0, 1, 2], [85, 142, 168],
              color=[huitu.role("baseline_soft"),
                     huitu.role("hero_soft"),
                     huitu.role("hero")],
-             edgecolor="white", linewidth=0.4)
+             edgecolor="white", linewidth=0.6, width=0.72)
     sup3.set_xticks([0, 1, 2])
-    sup3.set_xticklabels(["P", "A", "C"], fontsize=7)
-    sup3.set_ylabel("Capacity (mAh g⁻¹)", fontsize=7)
-    sup3.set_title("Capacity by stage", fontsize=8, pad=4)
+    sup3.set_xticklabels(["Pristine", "Activ.", "Cycled"],
+                         fontsize=7, rotation=0)
+    sup3.set_ylabel(r"Capacity (mAh g$^{-1}$)", fontsize=8)
+    sup3.set_xlabel("")
     sup3.spines["top"].set_visible(False)
     sup3.spines["right"].set_visible(False)
+    sup3.tick_params(axis="y", labelsize=7)
+    # Value labels above bars for quantitative readability.
+    for i, v in enumerate([85, 142, 168]):
+        sup3.text(i, v + 4, str(v), ha="center", va="bottom",
+                  fontsize=7, color=huitu.role("neutral_dark"))
+    sup3.set_ylim(0, 200)
     fig.savefig(OUT / "01_archetype_schematic_led.png",
                 bbox_inches="tight", dpi=HD_DPI, facecolor="white")
     plt.close(fig)
@@ -242,45 +264,90 @@ def render_ridgeline() -> None:
 # ── 8. Pourbaix diagram ─────────────────────────────────────────────────────
 
 def render_pourbaix() -> None:
-    """Synthetic Fe / H2O-like Pourbaix regions."""
-    # Each region: closed polygon in (pH, E) space.
+    """Synthetic Fe / H2O-like Pourbaix regions.
+
+    Five regions that perfectly tile (pH=0..14) × (E=-1..2) with no gaps
+    and no overlaps:
+
+      * Fe³⁺(aq) — top-left rectangle           (acidic + oxidizing)
+      * Fe²⁺(aq) — middle-left rectangle        (acidic + mildly reducing)
+      * Fe(s)    — bottom strip across full pH  (strongly reducing)
+      * Fe₂O₃(s) — top-right L-shape            (basic + oxidizing)
+      * Fe(OH)₂(s) — middle-right pentagon      (basic + mildly reducing)
+
+    Shared boundaries:
+      pH = 5 between Fe³⁺/Fe²⁺ (left) and Fe₂O₃/Fe(OH)₂ (right).
+      E = 0.77 between Fe³⁺ ↔ Fe²⁺ and along upper Fe(OH)₂ edge.
+      Diagonal (5, 0.77) → (9, 0.0) separates Fe₂O₃ (above) from
+      Fe(OH)₂ (below) — the only non-axis-aligned boundary.
+    """
     regions = [
+        # Acidic, oxidizing: Fe³⁺
         {
             "label": "Fe³⁺(aq)",
-            "vertices": [(0, 2.0), (4.5, 2.0), (4.5, 0.77), (3.0, 0.77),
-                         (0, 1.0)],
-            "color": huitu.role("baseline_soft"),
+            "vertices": [(0, 0.77), (5, 0.77), (5, 2.0), (0, 2.0)],
+            "color": "#E8A89C",   # warm pink — oxidized aqueous
         },
+        # Acidic, mildly reducing: Fe²⁺
         {
             "label": "Fe²⁺(aq)",
-            "vertices": [(0, 0.77), (4.5, 0.77), (4.5, -0.45),
-                         (0, -0.45), (0, 0.77)],
-            "color": huitu.role("hero_soft"),
+            "vertices": [(0, -0.45), (5, -0.45), (5, 0.77), (0, 0.77)],
+            "color": "#C5D4E8",   # cool blue — reduced aqueous
         },
+        # Strongly reducing: metallic Fe across full pH range
         {
             "label": "Fe(s)",
-            "vertices": [(0, -0.45), (14, -0.45), (14, -1.0),
-                         (0, -1.0)],
-            "color": huitu.role("neutral_light"),
+            "vertices": [(0, -1.0), (14, -1.0), (14, -0.45), (0, -0.45)],
+            "color": "#D8D8D8",   # neutral grey — native metal
         },
+        # Basic, oxidizing: hematite
         {
             "label": "Fe₂O₃(s)",
-            "vertices": [(4.5, 2.0), (14, 2.0), (14, 0.0),
-                         (8.5, 0.0), (4.5, 0.77)],
-            "color": huitu.role("hero"),
+            "vertices": [(5, 0.77), (9, 0.0), (14, 0.0), (14, 2.0), (5, 2.0)],
+            "color": "#B85450",   # deep rust red — hematite
         },
+        # Basic, mildly reducing: ferrous hydroxide
         {
             "label": "Fe(OH)₂(s)",
-            "vertices": [(8.5, 0.0), (14, 0.0), (14, -0.45),
-                         (4.5, -0.45), (4.5, 0.77), (8.5, 0.0)],
-            "color": huitu.role("baseline_2"),
+            "vertices": [(5, -0.45), (14, -0.45), (14, 0.0),
+                         (9, 0.0), (5, 0.77)],
+            "color": "#7BA7C7",   # muted blue — hydroxide
         },
     ]
     fig, ax = huitu.plot_pourbaix(regions, journal="default",
-                                   ph_range=(0, 14), e_range=(-1.0, 2.0))
+                                   ph_range=(0, 14), e_range=(-1.0, 2.0),
+                                   alpha=0.55)
+    # `label_position="top"` mis-places labels for the irregular Fe(OH)₂
+    # pentagon (puts it above the diagonal, inside Fe₂O₃) and pins Fe(s)
+    # to the boundary with Fe²⁺. Replace the auto-placed bbox'd labels
+    # with manually chosen positions guaranteed to sit inside each region.
+    for txt in list(ax.texts):
+        if txt.get_bbox_patch() is not None and "Fe" in txt.get_text():
+            txt.remove()
+    label_positions = {
+        r"Fe$^{3+}$(aq)":  (2.4, 1.45),
+        r"Fe$^{2+}$(aq)":  (2.4, 0.16),
+        r"Fe(s)":          (7.0, -0.72),
+        r"Fe$_2$O$_3$(s)": (11.0, 1.45),
+        r"Fe(OH)$_2$(s)":  (10.5, -0.22),
+    }
+    for label, (x, y) in label_positions.items():
+        ax.text(x, y, label, ha="center", va="center", fontsize=8,
+                zorder=4, bbox=dict(facecolor="white", edgecolor="none",
+                                     alpha=0.88, pad=2))
+    # Inline-label the water-stability lines at their right endpoints
+    # instead of cluttering the corner legend.
+    ax.get_legend().remove()
+    ph_end = 14
+    ax.text(ph_end - 0.2, 1.229 - 0.05916 * ph_end - 0.05, r"O$_2$/H$_2$O",
+            ha="right", va="top", fontsize=7, style="italic", color="#555",
+            bbox=dict(facecolor="white", edgecolor="none", alpha=0.85, pad=1))
+    ax.text(ph_end - 0.2, -0.05916 * ph_end + 0.06, r"H$_2$/H$_2$O",
+            ha="right", va="bottom", fontsize=7, style="italic", color="#555",
+            bbox=dict(facecolor="white", edgecolor="none", alpha=0.85, pad=1))
     ax.set_title("Pourbaix diagram — Fe / H₂O at 25 °C (synthetic)",
-                 fontsize=11, pad=8, color=huitu.role("neutral_dark"))
-    fig.set_size_inches(6.4, 5.0)
+                 fontsize=11, pad=10, color=huitu.role("neutral_dark"))
+    fig.set_size_inches(7.0, 5.2)
     fig.savefig(OUT / "08_pourbaix_diagram.png",
                 bbox_inches="tight", dpi=HD_DPI, facecolor="white")
     plt.close(fig)

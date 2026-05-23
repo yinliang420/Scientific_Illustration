@@ -351,33 +351,49 @@ rm -rf ~/.codex/skills/huitu      # Codex
 
 skill 的激活由 `SKILL.md` 顶部的 YAML `description` 字段控制——**只要你的输入命中下列任何关键词，agent 就会自动加载 huitu**，不需要你手动说"用 huitu 画"。
 
-#### 中文触发词
+#### ⭐ 中英文 · 简称 / 全称 全部认（4 种说法都触发同一函数）
 
-| 类别 | 关键词 |
+每种图类型的**英文简称、英文全称、中文简称、中文全称**都是等价的触发词。agent 看到任意一种就锁定到同一个函数——你不用记"标准名"，怎么自然怎么说。
+
+举例：下列**任何一种**说法都会激活 huitu 并锁定到 `plot_xrd`：
+
+| 你怎么说 | 等价说法 |
 |---|---|
-| **动词** | 画 / 绘制 / 出图 / 渲染 / 生成 |
-| **表征** | XRD / 衍射 · XPS / 光电子能谱 · Raman / 拉曼 · FTIR / 红外 · UV-Vis / 紫外可见 · PL / 荧光 · TGA / DSC / 热分析 · Rietveld / 精修 · BET / 等温线 |
-| **电化学** | CV / 循环伏安 · GCD / 充放电 · EIS / 阻抗 / Nyquist / Bode · Tafel · dQ/dV / 差分容量 · 库伦效率 |
-| **DFT** | 能带 · DOS / PDOS / 态密度 · COHP · Pourbaix / 电位-pH · 相图 · 晶体结构 |
-| **原位** | operando / 原位 |
-| **排版 / QA** | 期刊配图 · Nature 风格图 · 材料论文配图 · 多图组合 PDF · 冗余检查 · 审稿清单 |
-| **图种** | 柱图 · 散点 · 折线 · 热图 · 箱线 · 雷达 · 密度 · 山脊 · 排名 · 河流图 · 平行坐标 |
+| `XRD` | X-ray diffraction · Powder diffraction · 衍射 · X 衍射 · 粉末衍射 · X 射线衍射 · 粉末 X 射线衍射 |
 
-#### 英文触发词
+再如 `plot_eis` 触发词：
 
-| 类别 | 关键词 |
+| 你怎么说 | 等价说法 |
 |---|---|
-| **动词** | plot / draw / render / generate / make |
-| **表征** | XRD / XPS / Raman / FTIR / UV-Vis / Tauc / PL / TGA / DSC / Rietveld / BET |
-| **电化学** | CV / GCD / cycling / EIS / Nyquist / Bode / Tafel / dQ/dV |
-| **DFT** | band structure / DOS / PDOS / COHP / Pourbaix / phase diagram / crystal |
-| **原位** | operando / in-situ |
-| **排版** | schematic-led / image plate / clinical triptych / asymmetric hero / multi-panel / Nature-style |
-| **QA** | anti-redundancy / reviewer checklist / figure contract |
-| **图种** | bar / scatter / line / heatmap / box / violin / radar / KDE / SHAP / ridgeline / bump / streamgraph / parallel-coords / waffle |
-| **格式** | journal-ready / 600 dpi / editable SVG / editable PDF / multi-page PDF |
+| `EIS` | Nyquist · Electrochemical impedance spectroscopy · Impedance spectrum · 阻抗 · 奈奎斯特 · EIS 图 · Nyquist 图 · 电化学阻抗谱 · 阻抗谱 |
 
-完整清单见 [SKILL.md](SKILL.md) 的 `## When to use this skill` 段落。
+**完整的 4 列对照表**（46 个 `plot_*` × 4 种说法）见 [SKILL.md → Aliases](SKILL.md#aliases--中英文简称--全称--函数对照表) — 这是 agent 在会话里实际读取的权威表。下面给出按类别压缩的速查版本。
+
+#### 速查表（按类别）
+
+| 类别 | 你可以这么说（任意一种） |
+|---|---|
+| **动词** | plot / draw / render / generate / make · 画 / 绘制 / 出图 / 渲染 / 生成 |
+| **表征 / Characterization** | XRD / 衍射 / X 射线衍射 · XPS / 光电子能谱 · Raman / 拉曼 / 拉曼光谱 · FTIR / IR / 红外 / 傅里叶变换红外光谱 · UV-Vis / Tauc / 紫外可见 / 紫外可见吸收光谱 · PL / 荧光 / 光致发光 · TGA / DSC / 热重 / 热分析 / 差示扫描量热 · Rietveld / 精修 / 全谱拟合 · BET / 等温线 / 氮吸附 / 比表面 |
+| **电化学 / Electrochem** | CV / 循环伏安 / 循环伏安法 · GCD / 充放电 / 恒流充放电 · cycling / 循环 / 循环性能 / 库伦效率 / CE · EIS / Nyquist / 阻抗 / 奈奎斯特 / 电化学阻抗谱 · Bode / 伯德图 · Tafel / 塔菲尔 · dQ/dV / 差分容量 / 微分容量 |
+| **DFT** | band / 能带 / 能带结构 · DOS / PDOS / 态密度 / 分波态密度 · COHP / ICOHP / 哈密顿布居 · Pourbaix / E-pH / 电位-pH / 普尔贝图 · phase diagram / 相图 / 二元相图 · crystal / 晶体 / 晶胞 / 晶体结构 |
+| **原位 / Operando** | operando / in-situ / 原位 / 原位热图 / 原位演化 / 时间分辨 |
+| **图种** | bar / 柱图 / 柱状图 · scatter / 散点 / 散点图 · line / 折线 / 折线图 · heatmap / contour / 热图 / 热力图 / 等高线 · box / violin / 箱线 / 箱型 / 小提琴 · radar / spider / 雷达 / 蜘蛛图 · KDE / density / 密度 / 核密度 · SHAP / SHAP 重要性 / 蜂群图 · ridgeline / 山脊 / 山脊图 · bump / 排名图 / 名次图 · streamgraph / 河流图 · parallel / PCP / 平行坐标 · waffle / 华夫图 · dumbbell / 哑铃图 · slope / 斜率图 · connected scatter / 连接散点 |
+| **排版 / 拼版** | schematic-led / 示意主导 · image plate / 显微 grid · clinical triptych / 临床三段 · asymmetric hero / 不对称 · multi-panel / 多面板 · subplots / 子图 · inset / 局部放大 · share axes / 共享坐标轴 · multi-page PDF / 多图组合 PDF / 报告 PDF |
+| **QA** | anti-redundancy / 冗余检查 · reviewer checklist / 审稿清单 / 投稿前自检 |
+| **输出 / Output** | journal-ready / 期刊级 · Nature 风格 · editable SVG / PDF · 可编辑 SVG · 600 dpi |
+
+#### 容易混淆的简称 — agent 怎么消歧
+
+| 简称 | 消歧规则 |
+|---|---|
+| **IR** | 单独说 IR → `plot_ftir`（huitu 里 FTIR 是唯一 IR helper） |
+| **DOS / PDOS / LDOS** | 三种都路由到 `plot_dos`；带 `orientation="vertical"` 可贴 `plot_band` 旁边 |
+| **Nyquist** vs **Bode** | Nyquist → `plot_eis`；Bode → `plot_bode`。永远不混 |
+| **cycle / cycling** | 电化学语境 → `plot_cycle`（容量 + CE）；排名演化语境（出版数、运动名次） → `plot_bump` |
+| **heatmap** | 不带原位 → `plot_heatmap`；带 "原位 / in-situ / time-resolved" → `plot_operando` 家族 |
+| **crystal** | 默认 → `plot_crystal_ase`（无额外依赖）；提到 VESTA 或配了 `VESTA_BIN` → `plot_crystal_vesta` |
+| **density** | `(x, y)` 数据 → `plot_density`（2D KDE）；带 "electronic" → `plot_dos` |
 
 #### 不会激活 huitu 的场景
 

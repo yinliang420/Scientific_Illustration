@@ -44,6 +44,123 @@ Activate **whenever** the user mentions any of:
 - Output / export: `journal-ready / 期刊级`, `Nature 风格`, `editable SVG / PDF`, `600 dpi`, `multi-page PDF / 多图组合`.
 - Verbs: `plot / draw / render / generate / make / 画 / 绘制 / 出图 / 渲染 / 生成`.
 
+## Aliases — 中英文简称 / 全称 → 函数对照表
+
+When the user mentions any name in **any** of the four columns below — English
+abbreviation, English full name, Chinese abbreviation, or Chinese full name —
+route to the function in column 1. The agent must recognise all four forms as
+equivalent; do not require the user to use the "canonical" name.
+
+### 表征 / Characterization
+
+| Function | English abbr. | English full name | 中文简称 | 中文全称 |
+|---|---|---|---|---|
+| `plot_xrd` | XRD | X-ray diffraction · Powder diffraction · Powder XRD | 衍射 · X 衍射 · 粉末衍射 | X 射线衍射 · 粉末 X 射线衍射 |
+| `plot_xps` | XPS · ESCA | X-ray photoelectron spectroscopy · Electron spectroscopy for chemical analysis | 光电子能谱 · XPS 谱 | X 射线光电子能谱 · 化学分析电子能谱 |
+| `plot_raman` | Raman | Raman spectroscopy · Raman scattering | 拉曼 · 拉曼谱 | 拉曼光谱 · 拉曼散射光谱 |
+| `plot_ftir` | FTIR · IR | Fourier-transform infrared spectroscopy · Infrared spectroscopy | 红外 · IR 谱 · 红外谱 | 傅里叶变换红外光谱 · 红外吸收光谱 |
+| `plot_uvvis` | UV-Vis · UV · Tauc | Ultraviolet–visible spectroscopy · Tauc plot · Absorption spectrum | 紫外可见 · 紫外 · UV-Vis 谱 · Tauc 图 | 紫外可见吸收光谱 · 紫外–可见分光光度 · Tauc 作图 |
+| `plot_pl` | PL | Photoluminescence · PL spectrum · Emission spectrum | 荧光 · 光致发光 · PL 谱 | 光致发光光谱 · 荧光发射光谱 |
+| `plot_thermal` | TGA · DSC · TG-DSC · DTA | Thermogravimetric analysis · Differential scanning calorimetry · Thermal analysis | 热重 · 热分析 · 差扫 · 热重分析 | 热重分析 · 差示扫描量热法 · 同步热分析 |
+| `plot_rietveld` | Rietveld | Rietveld refinement · Whole-pattern fitting | 精修 · Rietveld 精修 · 全谱拟合 | Rietveld 全谱精修 · 粉末衍射全谱拟合 |
+| `plot_bet` | BET · N₂ isotherm · BJH | Brunauer–Emmett–Teller isotherm · Nitrogen adsorption · Surface-area analysis | BET · 等温线 · 氮吸附 · 比表面 | BET 等温线 · N₂ 吸附–脱附等温线 · 比表面积测试 |
+| `plot_operando` · `plot_operando_*` | operando · in-situ | Operando measurement · In-situ characterization · Time-resolved spectroscopy | 原位 · 原位热图 · 原位谱图 | 原位测试 · 原位表征 · 时间分辨光谱 |
+
+### 电化学 / Electrochemistry
+
+| Function | English abbr. | English full name | 中文简称 | 中文全称 |
+|---|---|---|---|---|
+| `plot_cv` | CV | Cyclic voltammetry · Cyclic voltammogram | 循环伏安 · CV 曲线 · CV 图 | 循环伏安法 · 循环伏安曲线 |
+| `plot_gcd` | GCD · CC · GC | Galvanostatic charge–discharge · Constant-current cycling · Charge–discharge curve | 充放电 · GCD 曲线 · 恒流充放电 | 恒电流充放电曲线 · 恒流充放电测试 |
+| `plot_cycle` | Cycling · Capacity-retention | Cycle performance · Long-term cycling · Capacity vs. cycle | 循环 · 循环性能 · 库伦效率 · CE | 循环性能曲线 · 长循环稳定性 · 比容量保持率 |
+| `plot_eis` | EIS · Nyquist | Electrochemical impedance spectroscopy · Nyquist plot · Impedance spectrum | 阻抗 · 奈奎斯特 · EIS 图 · Nyquist 图 | 电化学阻抗谱 · 奈奎斯特图 · 阻抗谱 |
+| `plot_bode` | Bode | Bode plot · Bode diagram | Bode 图 · 伯德图 | 伯德图 · 频率响应图 |
+| `plot_tafel` | Tafel | Tafel plot · Tafel slope analysis | Tafel 曲线 · 塔菲尔 | 塔菲尔曲线 · Tafel 斜率拟合 |
+| `plot_dqdv` | dQ/dV · DCA | Differential capacity analysis · dQ/dV curve · Incremental capacity | 差分容量 · 微分容量 · dQ/dV 曲线 | 差分容量分析 · 微分容量曲线 · ICA 分析 |
+
+### 第一性原理 / Computational
+
+| Function | English abbr. | English full name | 中文简称 | 中文全称 |
+|---|---|---|---|---|
+| `plot_band` | Band · BS | Band structure · Electronic band structure · E-k diagram | 能带 · 能带图 | 能带结构 · 电子能带 · E-k 关系图 |
+| `plot_dos` | DOS · PDOS · LDOS | Density of states · Projected DOS · Local DOS | 态密度 · 分波态密度 · 投影态密度 | 电子态密度 · 投影态密度 · 局域态密度 |
+| `plot_cohp` | COHP · ICOHP | Crystal orbital Hamilton population · Integrated COHP | COHP · 哈密顿布居 | 晶体轨道哈密顿布居 · 积分 COHP |
+| `plot_pourbaix` | Pourbaix · E-pH | Pourbaix diagram · Potential–pH diagram · Stability diagram | 电位-pH · Pourbaix 图 | 电位–pH 图 · 普尔贝图 · 电化学稳定相图 |
+| `plot_phase_diagram` | Phase diagram | Binary phase diagram · T-composition diagram | 相图 · 二元相图 | 二元相图 · 温度–成分相图 |
+| `plot_crystal_ase` · `plot_crystal_vesta` | Crystal | Crystal structure · Unit cell · Lattice model | 晶体 · 晶胞 · 晶体结构 | 晶体结构图 · 晶胞结构 · 三维晶格模型 |
+
+### 通用 / Generic plot families
+
+| Function | English abbr. | English full name | 中文简称 | 中文全称 |
+|---|---|---|---|---|
+| `plot_bar` | Bar | Bar chart · Grouped bar · Stacked bar · Column chart | 柱图 · 条形图 · 柱状 | 柱状图 · 分组柱状图 · 堆叠柱状图 |
+| `plot_scatter` | Scatter | Scatter plot · XY plot · Predicted-vs-measured plot | 散点 · 散点图 | 散点图 · 预测 vs 实测图 |
+| `plot_line` | Line | Line plot · Time-series plot · Twin-Y line | 折线 · 折线图 · 双 Y 折线 | 折线图 · 时间序列折线图 · 双纵轴折线 |
+| `plot_heatmap` | Heatmap · Contour | Heatmap · Contour plot · Filled contour | 热图 · 等高线 · 热力图 | 热力图 · 等高线图 · 二维强度图 |
+| `plot_box_violin` | Box · Violin | Box plot · Box-and-whisker plot · Violin plot | 箱线 · 箱型 · 小提琴 | 箱线图 · 箱型图 · 小提琴图 |
+| `plot_radar` | Radar · Spider | Radar chart · Spider chart · Star plot | 雷达 · 雷达图 · 蜘蛛图 | 雷达图 · 蜘蛛图 · 多维属性图 |
+| `plot_density` | KDE · Density | 2-D kernel density estimate · Density plot | 密度 · 核密度 · KDE | 二维核密度估计 · 概率密度图 |
+| `plot_shap` | SHAP | SHAP bee-swarm · SHAP importance · Feature-importance swarm | SHAP · SHAP 图 | SHAP 重要性蜂群图 · 特征贡献图 |
+
+### 高级统计 / Advanced
+
+| Function | English abbr. | English full name | 中文简称 | 中文全称 |
+|---|---|---|---|---|
+| `plot_ridgeline` | Ridgeline · Ridge · Joy | Ridgeline plot · Joy plot · Stacked KDE | 山脊 · 山脊图 · Joy 图 | 山脊图 · 堆叠核密度图 |
+| `plot_dumbbell` | Dumbbell | Dumbbell plot · Before-after plot · Lollipop pair | 哑铃图 · 前后对比图 | 哑铃图 · 双端对比图 |
+| `plot_slope` | Slope | Slope chart · Slopegraph · Two-point comparison | 斜率图 · 斜线图 | 斜率图 · 两点比较斜线图 |
+| `plot_bump` | Bump | Bump chart · Rank-evolution plot · Rank-flow chart | 排名图 · 名次图 · 名次演化图 | 排名变化图 · 名次演化曲线 |
+| `plot_parallel` | Parallel coords · PCP | Parallel-coordinates plot · Multi-axis line plot | 平行坐标 · PCP | 平行坐标图 · 多维平行轴图 |
+| `plot_waffle` | Waffle | Waffle chart · Square-pie chart · Gridded proportion plot | 华夫图 · 方饼图 | 华夫图 · 方格比例图 |
+| `plot_streamgraph` | Stream · Streamgraph | Streamgraph · River plot · Stacked-flow chart | 河流图 · 流图 | 河流图 · 堆叠流量图 |
+| `plot_connected_scatter` | Connected scatter | Connected-scatter plot · Trajectory plot · State-space plot | 连接散点 · 轨迹散点 | 连接散点图 · 状态空间轨迹图 |
+
+### Operando 进阶 / Advanced operando
+
+| Function | Mention any of |
+|---|---|
+| `plot_operando_xrd_echem` | operando XRD + 电化学 · in-situ XRD + galvanostatic · 原位 XRD 双轴 · 原位 XRD + 充放电 |
+| `plot_operando_waterfall` | operando waterfall · in-situ waterfall · 原位瀑布图 · 时间序列叠图 |
+| `plot_operando_3d_surface` | operando 3D surface · 原位三维面图 · 3D 演化面 |
+| `plot_operando_diffmap` | operando diff map · 原位差分图 · difference heatmap |
+| `plot_operando_peak_evolution` | operando peak evolution · 峰位演化 · peak shift over time · 峰演化 |
+| `plot_operando_contour` | operando contour · 原位等高线 · time-resolved contour |
+
+### 排版与 QA / Layout & QA
+
+| Function | Mention any of |
+|---|---|
+| `make_subplots` | subplots · 子图 · 多面板基础 · `(a)(b)(c)` 自动标注 |
+| `add_inset` | inset · 局部放大 · zoom-in · 嵌入图 · 子图放大 |
+| `share_axes` | share axes · 共享坐标轴 · 对齐 x/y · 链接坐标范围 |
+| `make_pdf_report` | multi-figure PDF · multi-page PDF · 多图组合 PDF · 报告 PDF · 一键多页 PDF |
+| `archetype.schematic_led` | schematic-led · 示意主导 · 顶部示意图 + 底部支撑 · 机理 + 量化 |
+| `archetype.dark_image_plate` | dark image plate · 显微 grid · 荧光黑底 · TEM/SEM 阵列 |
+| `archetype.clinical_triptych` | clinical triptych · 临床三段 · 纵向 → forest → summary |
+| `archetype.asymmetric_hero` | asymmetric hero · 不对称 hero · 跨行大图 |
+| `check_redundancy` · `print_redundancy_report` | anti-redundancy · 冗余检查 · panel 重复检查 · 信息层级检查 |
+| `reviewer_checklist` | reviewer checklist · 审稿清单 · 投稿前自检 · pre-submission QA |
+
+### Disambiguation rules
+
+When the user gives an ambiguous abbreviation, use these tiebreakers:
+
+- **"IR"** alone → `plot_ftir` (FTIR is the only IR helper in huitu).
+- **"DOS"** vs **"PDOS"** vs **"LDOS"** → all route to `plot_dos`; the
+  `orientation="vertical"` kwarg pairs it with `plot_band`.
+- **"Nyquist"** → `plot_eis`. **"Bode"** → `plot_bode`. Never confuse the two.
+- **"cycle / cycling"** in an **electrochemistry** context → `plot_cycle`
+  (capacity + CE). In a **rank-evolution** context (publications, sports,
+  metrics over years) → `plot_bump`.
+- **"heatmap"** without operando context → `plot_heatmap`. With "in-situ /
+  原位 / time-resolved" → `plot_operando` family (pick the variant from §
+  *Operando 进阶*).
+- **"crystal"** with no further hint → `plot_crystal_ase` (no extra
+  dependency); switch to `plot_crystal_vesta` only if the user mentions
+  VESTA or has `VESTA_BIN` configured.
+- **"density"** with `(x, y)` data → `plot_density` (2-D KDE). With
+  electronic-structure context ("electronic density of states") → `plot_dos`.
+
 ## When NOT to load
 
 - Interactive / web plotting (`plotly`, `bokeh`, `altair`, `dash`, `streamlit`).
