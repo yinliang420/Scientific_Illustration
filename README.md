@@ -10,7 +10,7 @@
 
 `huitu` 把 matplotlib + scienceplots 包装成"一行出图"的体验：
 
-* **44 个 ready-to-use 绘图函数**，覆盖材料学论文里最常见的表征 / 电化学 /
+* **46 个 ready-to-use 绘图函数**，覆盖材料学论文里最常见的表征 / 电化学 /
   第一性原理 / 高级统计 / 原位 (operando) 谱图。
 * **8 大期刊预设**（Nature / Science / ACS / RSC / Wiley / Elsevier / IEEE
   / default），尺寸、字号、字重、刻度、配色一次性符合规范。
@@ -83,10 +83,10 @@ pip install -e ".[crystal]"       # 加上 ASE 晶体渲染
 pip install -e ".[dev]"           # 加上 pytest / build / twine
 ```
 
-或者从 [Releases](https://github.com/yinliang420/Scientific_Illustration/releases) 下载 `huitu-0.6.0-py3-none-any.whl`：
+或者从 [Releases](https://github.com/yinliang420/Scientific_Illustration/releases) 下载 `huitu-0.6.3-py3-none-any.whl`：
 
 ```bash
-pip install huitu-0.6.0-py3-none-any.whl
+pip install huitu-0.6.3-py3-none-any.whl
 ```
 
 依赖：Python ≥ 3.9、matplotlib ≥ 3.7、numpy ≥ 1.23、pandas ≥ 1.5、scipy ≥ 1.10、scienceplots ≥ 2.0、Pillow ≥ 9.0。
@@ -174,7 +174,7 @@ huitu.plot_operando_xrd_echem(
 
 ---
 
-## 📑 覆盖的图类型（44 个）
+## 📑 覆盖的图类型（46 个）
 
 | 类别 | 函数 |
 |---|---|
@@ -353,7 +353,7 @@ cmap = huitu.get_cmap("crameri-batlow")
 
 ```bash
 python -m pytest tests/ -v
-# 57 passed
+# 237 passed
 ```
 
 ---
@@ -362,7 +362,7 @@ python -m pytest tests/ -v
 
 ```
 huitu/
-├── __init__.py                  # 44 plot_* + role + archetype + QA 顶层 API
+├── __init__.py                  # 46 plot_* + role + archetype + QA 顶层 API
 ├── style.py                     # 8 期刊预设 + 55 调色板（含 semantic）+ 600 dpi + 可编辑 SVG/PDF
 ├── archetype.py                 # ✨ v0.5 — 4 个 Nature 排版 (schematic_led / dark_image_plate / clinical_triptych / asymmetric_hero)
 ├── review.py                    # ✨ v0.5 — check_redundancy + reviewer_checklist
@@ -377,8 +377,8 @@ huitu/
     ├── palettes.py              # 39 个 premium 调色板
     └── ridgeline.py / comparison.py / advanced.py / operando_pro.py
 examples/                        # 6 个核心示范脚本 + sample_data/
-tests/                           # 57 个 pytest
-docs/showcase/                   # README 用的 6 张展示图
+tests/                           # 237 个 pytest
+docs/showcase/                   # README 用的 9 张展示图
 ```
 
 ---
@@ -387,13 +387,13 @@ docs/showcase/                   # README 用的 6 张展示图
 
 ```bash
 pip install build
-python -m build           # → dist/huitu-0.6.0-py3-none-any.whl + .tar.gz
+python -m build           # → dist/huitu-0.6.3-py3-none-any.whl + .tar.gz
 ```
 
 把 `.whl` 发给同事即可：
 
 ```bash
-pip install huitu-0.6.0-py3-none-any.whl
+pip install huitu-0.6.3-py3-none-any.whl
 ```
 
 ---
@@ -406,7 +406,8 @@ pip install huitu-0.6.0-py3-none-any.whl
 * **v0.4** — +14 高级 / 原位图，Pro 全开，600 dpi 默认，39 个 premium 调色板，标签边界严格保护
 * **v0.5.0** — Nature-style 升级：可编辑 SVG/PDF 文字 · 18-key 语义调色板（`role()`） · 4 大排版 archetype · anti-redundancy 检查 · reviewer-risk checklist
 * **v0.5.1 / v0.5.2** — 3 轮 4-agent 对抗迭代加固（14 个 bug）
-* **v0.6.0 (current)** — pymatgen `BSVasprun` · `plot_bet` · `plot_dqdv` · `make_pdf_report`；examples/ 瘦身到 6 个核心示范；删 inspirations/ + real_data_test/ + USAGE.md + hardening 案例研究，仓库结构最精简
+* **v0.6.0** — pymatgen `BSVasprun` · `plot_bet` · `plot_dqdv` · `make_pdf_report`；examples/ 瘦身到 6 个核心示范；删 inspirations/ + real_data_test/ + USAGE.md + hardening 案例研究，仓库结构最精简
+* **v0.6.1 / v0.6.2 / v0.6.3 (current)** — round-4 polish、round-5 视觉审计（52 图 harness）、round-6 xy-label 查缺补漏；测试套涨到 237
 * **v0.7 (planned)** — 公开 `huitu.finalize` · `figure_contract()` helper · BET multi-sample comparator
 
 ---

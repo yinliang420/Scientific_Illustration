@@ -59,8 +59,8 @@ Activate **whenever** the user mentions any of:
 end-to-end agent-callable plotting skill:
 
 1. **Python package** (`pip install -e .` from the repo, or `pip install
-   huitu-0.6.0-py3-none-any.whl` from a GitHub Release) — provides
-   `import huitu` and the 47 `plot_*` functions + 4 archetypes that
+   huitu-0.6.3-py3-none-any.whl` from a GitHub Release) — provides
+   `import huitu` and the 46 `plot_*` functions + 4 archetypes that
    actually render figures.
 
 2. **Skill bundle** (`cp -R . ~/.claude/skills/huitu/` for Claude Code,
@@ -144,7 +144,7 @@ fig.savefig("panel.pdf")
 
 Advanced (v0.4) families — statistical / comparison / operando — and the v0.5
 archetype + role + review APIs live under `huitu/pro/*.py`, `huitu/archetype.py`,
-`huitu/review.py`. See `huitu/__init__.py` for the complete export list (44 plot
+`huitu/review.py`. See `huitu/__init__.py` for the complete export list (46 plot
 functions + 4 archetypes + role + check_redundancy + reviewer_checklist).
 
 ## Inline quickstart snippets
@@ -307,11 +307,10 @@ Pre-generated synthetic samples live under `examples/sample_data/` (regenerate w
 ## Extension roadmap
 
 - **v0.2 (shipped)**: FTIR, UV-Vis/Tauc, PL, TGA+DSC, Bode, Tafel, band, DOS/PDOS, heatmap/contour, box/violin.
-- **Shipped in v0.3**: Rietveld refinement, COHP/ICOHP, Pourbaix (E-pH), binary phase diagrams, radar/spider, post-hoc `share_axes`, crystal structure rendering (ASE and VESTA dispatcher).
-- **Future**
-  - pymatgen-backed band structure (`BSVasprun` / `BandStructureSymmLine`) input for `plot_band`
-  - `plot_isotherm` (BET N2 adsorption/desorption)
-  - Differential capacity (dQ/dV) and in-situ waterfall plots
-  - Automatic report/PDF generation combining multiple panels
+- **v0.3 (shipped)**: Rietveld refinement, COHP/ICOHP, Pourbaix (E-pH), binary phase diagrams, radar/spider, post-hoc `share_axes`, crystal structure rendering (ASE and VESTA dispatcher).
+- **v0.4 (shipped)**: 14 statistical / operando helpers (ridgeline, dumbbell, slope, bump, parallel, waffle, streamgraph, connected_scatter, six operando variants); 600 dpi default; 39 premium palettes.
+- **v0.5 (shipped)**: editable SVG/PDF text, semantic role palette (`role()`), 4 Nature archetypes, `check_redundancy` + `reviewer_checklist`.
+- **v0.6 (shipped)**: pymatgen `BSVasprun` / `BandStructureSymmLine` input for `plot_band`, `plot_bet` (BET N₂ isotherm), `plot_dqdv` (differential capacity), `make_pdf_report` (multi-figure PDF).
+- **v0.7 (planned)**: public `huitu.finalize`, `figure_contract()` helper, BET multi-sample comparator.
 
 Contributions welcome — add a module under the appropriate subpackage, expose from `huitu/__init__.py`, ship an example script and sample data.

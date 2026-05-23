@@ -6,7 +6,7 @@
 ```
 huitu_skills/                      ← repo root (= the GitHub repo)
 ├── huitu/                         ← THE LIBRARY (all plotting code lives here)
-│   ├── __init__.py                ← public API surface — re-exports 44 plot_* + role + archetype + …
+│   ├── __init__.py                ← public API surface — re-exports 46 plot_* + role + archetype + …
 │   ├── style.py                   ← 8 journal presets + 55 palettes + _FrozenStrMap + _PALETTES_BACKING
 │   ├── archetype.py               ← 4 Nature-style layouts (schematic_led / dark_image_plate / …)
 │   ├── review.py                  ← check_redundancy + reviewer_checklist
@@ -19,7 +19,7 @@ huitu_skills/                      ← repo root (= the GitHub repo)
 │   ├── pro/                       ← legacy alias namespace (v0.4 advanced + operando charts)
 │   └── readers/                   ← txt/csv input normalisation
 │
-├── tests/                         ← pytest unit tests (57, all green)
+├── tests/                         ← pytest unit tests (237, all green)
 │
 ├── examples/                      ← SIX CANONICAL DEMOS (slim — full per-function calling conventions live in each plot_*'s docstring)
 │   ├── quickstart.py              ← one-line plot_xrd with journal preset
@@ -31,7 +31,7 @@ huitu_skills/                      ← repo root (= the GitHub repo)
 │   ├── output/                    ← generated demo outputs (gitignored — regenerable)
 │   └── sample_data/               ← synthetic two-column txt files for demos
 │
-├── docs/showcase/                 ← README hero images (6 PNGs used in the Showcase grid)
+├── docs/showcase/                 ← README hero images (9 PNGs used in the Showcase grid)
 │
 ├── README.md         ← project entry point (badges + quickstart + showcase grid)
 ├── SKILL.md          ← full plot catalogue with `Source` column + inline quickstart snippets
